@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/XML/XMLDocument.xml to edit this template
+-->
+
+<root>
+    <task number="1">
+        <category>画面追加・ファイル管理</category>
+        <problem date="2023-5-30">
+            Domino定義をインポートする画面を作る。
+            Domino定義はインポートすると、AppBaseDir/Editing
+            フォルダにコピーされる。
+            AppBaseDir/Editing/Oldフォルダに編集履歴が保管される。
+            開いた状態にしたDomino定義ファイルのリストに、「+Add」ボタンで追加する形式。
+        </problem>
+        <solution>
+        </solution>
+        <feedback>
+        </feedback>
+    </task>
+    <task number="2">
+        <category>画面追加</category>
+        <problem data="2023-5-30">
+            MIDI入出力は、開いたものだけリスト管理される。
+            開いた状態にするには「+Add」ボタンにより、ピックアップダイアログが表示され、ピックアップすること。
+            開いた状態のリストの行に、開かれているDomino定義ファイルから、割りあてることができる。
+            （割り当てても意味をもたないので省略可能）
+    </task>
+    <task number="3">
+        <category>画面追加</category>
+        <problem data="2023-5-30">
+            メイン画面では、Module, Ch, Gate, Value, Kontroller Module/Ch/Gate　を行とするテーブルを持つ。
+            「+Plus」「-Minus」「Edit」 では、スマホのような設定画面がポップアップする。
+            設定画面では、パラメータ設定ダイオログに遷移する一覧を表示する。
+        </problem>
+    </task>
+    <task number="4">
+        <category>画面追加</category>
+        <problem data="2023-5-30">
+            メイン画面では、下部で、それぞれの行(コントローラ）の数値（定義でない区分）Value,Ch,Gateを変化させることができる。
+        </problem>
+    </task>
+    <task number="5">
+        <category>画面</category>
+        <problem data="2023-5-30">
+            ColorPicker、テキストとGUIの相互変換。
+        </problem>
+    </task>
+    <task number="6">
+        <category>Instrument</category>
+        <problem data="2023-5-30">
+            音色一覧は、XMLエディタから、拡張エディタにモードへ切り替えて編集する。
+            仕様は、Dominoのそれに準拠させる、また、"xx/yy/zz/piano"という音色名なら、
+            "xx", "yy", "zz"は、音色の特徴、カテゴリを表している。
+            カテゴリ一覧からの検索を実装する。
+        </problem>
+    </task>
+    <task number="7">
+        <category>CC</category>
+        <problem data="2023-5-30">
+            ControlChangeのエディタは、XMLエディタとほぼほぼ同じでかまわないはず。
+            XMLエディタは、タグ、属性、値の候補を管理しているので、それを文字ベースからUIベースにするだけ。
+        </problem>
+    </task>
+    <task number="8">
+        <category>MIDI信号</category>
+        <problem data="2023-5-30">
+            InputにMapされた設定から、MIDIシグナルの値を取得する。
+            OuputにMapされた設定から、MIDIシグナルを生成する。
+        </problem>
+    </task>
+    <task number="8">
+        <categoru>モック</categoru>
+        <problem date="2023-5-30">
+            task1から7を処理したら、残りの画面をモックアップとして作成して、再度、仕様を策定するための、フィードバック期間とする。
+        </problem>
+    </task>
+</root>
+
