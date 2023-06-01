@@ -22,7 +22,7 @@ import java.util.HashSet;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
-import jp.synthtarou.cceditor.xml.definition.CCXMLDefAttributes;
+import jp.synthtarou.cceditor.xml.definition.CCXMLAttributeRule;
 
 /**
  *
@@ -88,7 +88,7 @@ public class CCXMLTreeRenderer implements TreeCellRenderer {
             if (node._definition != null) {
                 HashSet<String> already = new HashSet();
 
-                for (CCXMLDefAttributes dump :  node._definition.listAttributes()) {
+                for (CCXMLAttributeRule dump :  node._definition.listAttributes()) {
                     String name = dump.getName();
                     String value = node.getAttributeValue(name);
                     if (value != null) {

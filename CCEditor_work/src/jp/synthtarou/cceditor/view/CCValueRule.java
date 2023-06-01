@@ -21,8 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 import jp.synthtarou.cceditor.common.CCUtilities;
 import jp.synthtarou.cceditor.xml.CCXMLNode;
-import jp.synthtarou.cceditor.xml.definition.CCXMLDefAttributes;
-import jp.synthtarou.cceditor.xml.definition.CCXMLDefTag;
+import jp.synthtarou.cceditor.xml.definition.CCXMLAttributeRule;
+import jp.synthtarou.cceditor.xml.definition.CCXMLTagRule;
 
 /**
  *
@@ -171,8 +171,8 @@ public class CCValueRule {
         _listMenuItem = new ArrayList<>();
         _type = TYPE_MENU;
 
-        CCXMLDefTag def = node.getDefinition();
-        List<CCXMLDefAttributes> listDefAttr = def.listAttributes();
+        CCXMLTagRule def = node.getDefinition();
+        List<CCXMLAttributeRule> listDefAttr = def.listAttributes();
 
         HashSet<String> already = new HashSet();
         for (int i = 0; i < listDefAttr.size(); ++i) {
@@ -190,8 +190,8 @@ public class CCValueRule {
         _listMenuItem = new ArrayList<>();
         _type = TYPE_MENU;
 
-        CCXMLDefTag def = node.getDefinition();
-        List<CCXMLDefTag> listDefTag = def.listChildTags();
+        CCXMLTagRule def = node.getDefinition();
+        List<CCXMLTagRule> listDefTag = def.listChildTags();
 
         HashSet<String> already = new HashSet();
         for (int i = 0; i < listDefTag.size(); ++i) {
@@ -207,8 +207,8 @@ public class CCValueRule {
 
     public CCValueRule createlistNodeAttributeValues(CCXMLNode node, String attributeName) {
         int x = node.indexOfAttribute(attributeName);
-        CCXMLDefTag def = node.getDefinition();
-        CCXMLDefAttributes defAttr = def.getAttribute(attributeName);
+        CCXMLTagRule def = node.getDefinition();
+        CCXMLAttributeRule defAttr = def.getAttribute(attributeName);
         CCValueRule rule = defAttr.getValueRule();
 
         _type = rule._type;

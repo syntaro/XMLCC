@@ -22,17 +22,17 @@ import jp.synthtarou.cceditor.view.CCValueRule;
  *
  * @author Syntarou YOSHIDA
  */
-public class CCXMLDefAttributes {
+public class CCXMLAttributeRule {
     final String _name;
     final String _defaultValue;
     final boolean _must;
     CCValueRule _rule;
 
-    public CCXMLDefAttributes(String name) { 
+    public CCXMLAttributeRule(String name) { 
         this(name, null);
     }
 
-    public CCXMLDefAttributes(String name, String defaultValue) { 
+    public CCXMLAttributeRule(String name, String defaultValue) { 
         _name = name;
         if (defaultValue == null) {
             _must = true;

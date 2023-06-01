@@ -25,14 +25,14 @@ import java.util.List;
  *
  * @author Syntarou YOSHIDA
  */
-public class CCXMLDefTag {
+public class CCXMLTagRule {
     String _name;
     
     boolean _textContents;
-    ArrayList<CCXMLDefAttributes> _listAttributes = new ArrayList<>();
-    ArrayList<CCXMLDefTag> _listChildTags = new ArrayList<>();
+    ArrayList<CCXMLAttributeRule> _listAttributes = new ArrayList<>();
+    ArrayList<CCXMLTagRule> _listChildTags = new ArrayList<>();
         
-    public CCXMLDefTag(String name) {
+    public CCXMLTagRule(String name) {
         _name = name;
     }
     
@@ -40,20 +40,20 @@ public class CCXMLDefTag {
         readyForAttribute(name, null, rule);
     }
 
-    public CCXMLDefAttributes readyForAttribute(String name, String defaultValue, CCValueRule rule) {
-        for(CCXMLDefAttributes already : _listAttributes) {
+    public CCXMLAttributeRule readyForAttribute(String name, String defaultValue, CCValueRule rule) {
+        for(CCXMLAttributeRule already : _listAttributes) {
             if (already._name.equalsIgnoreCase(name)) {
                 return already;
             }
         }
-        CCXMLDefAttributes attrType = new CCXMLDefAttributes(name, defaultValue);
+        CCXMLAttributeRule attrType = new CCXMLAttributeRule(name, defaultValue);
         attrType.setValueRule(rule);
         _listAttributes.add(attrType);
         return attrType;
     }
 
-    public void addChild(CCXMLDefTag  tag) {
-        for(CCXMLDefTag already : _listChildTags) {
+    public void addChild(CCXMLTagRule  tag) {
+        for(CCXMLTagRule already : _listChildTags) {
             if (already._name.equalsIgnoreCase(tag._name)) {
                 return;
             }
@@ -65,8 +65,8 @@ public class CCXMLDefTag {
         _textContents = textContents;
     }
     
-    public CCXMLDefAttributes getAttribute(String name) {
-        for (CCXMLDefAttributes attr : _listAttributes) {
+    public CCXMLAttributeRule getAttribute(String name) {
+        for (CCXMLAttributeRule attr : _listAttributes) {
             if (attr._name.equalsIgnoreCase(name)) {
                 return attr;
             }
@@ -74,8 +74,8 @@ public class CCXMLDefTag {
         return null;
     }
 
-    public CCXMLDefTag getTag(String name) {
-        for (CCXMLDefTag type : _listChildTags) {
+    public CCXMLTagRule getTag(String name) {
+        for (CCXMLTagRule type : _listChildTags) {
             if (type._name.equalsIgnoreCase(name)) {
                 return type;
             }
@@ -87,11 +87,11 @@ public class CCXMLDefTag {
         return _name;
     }
     
-    public List<CCXMLDefAttributes> listAttributes() {
+    public List<CCXMLAttributeRule> listAttributes() {
         return Collections.unmodifiableList(_listAttributes);
     }
 
-    public List<CCXMLDefTag> listChildTags() {
+    public List<CCXMLTagRule> listChildTags() {
         return Collections.unmodifiableList(_listChildTags);
     }
 

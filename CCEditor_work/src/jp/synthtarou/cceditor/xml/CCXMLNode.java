@@ -18,31 +18,29 @@
 package jp.synthtarou.cceditor.xml;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import jp.synthtarou.cceditor.common.CCWrapDataList;
-import jp.synthtarou.cceditor.xml.definition.CCXMLDefAttributes;
-import jp.synthtarou.cceditor.xml.definition.CCXMLDefTag;
-import jp.synthtarou.cceditor.xml.definition.CCXMLDefinitions;
+import jp.synthtarou.cceditor.xml.definition.CCXMLTagRule;
+import jp.synthtarou.cceditor.xml.definition.CCXMLRule;
 
 /**
  *
  * @author Syntarou YOSHIDA
  */
 public class CCXMLNode  {
-    public CCXMLNode(CCXMLNode parent, String name, CCXMLDefTag definition) {
+    public CCXMLNode(CCXMLNode parent, String name, CCXMLTagRule definition) {
         _name = name;
         _definition = definition;
         _parent = parent;
     }
     
-    final CCXMLDefTag _definition;
+    final CCXMLTagRule _definition;
     final String _name;
     final CCXMLNode _parent;
 
-    //TODO
-    //ArrayList<METag> _listPath = new ArrayList<>();
-
     String _textContext;
+    String _warningText;
+    int _lineNumber;
+    int _columnNumber;
 
     ArrayList<CCXMLAttribute> _listAttributes = new ArrayList<>();
     ArrayList<CCXMLNode> _listChildTags = new ArrayList<>();
@@ -59,7 +57,7 @@ public class CCXMLNode  {
         _textContext = text;
     }
     
-    public CCXMLDefTag getDefinition() {
+    public CCXMLTagRule getDefinition() {
         return _definition;
     }
     
@@ -156,27 +154,28 @@ public class CCXMLNode  {
     }
 
     public CCWrapDataList<CCXMLNode> getChildInstruemntsList() {
-        CCXMLDefinitions def = CCXMLDefinitions.getInstance();
-        return getChildren(def.getInstrumentList().getName());
+        CCXMLRule def = CCXMLRule.getInstance();
+        return getChildren(def.getInstrumentListTag().getName());
     }
 
     public CCWrapDataList<CCXMLNode> getChildDrumSetList() {
-        CCXMLDefinitions def = CCXMLDefinitions.getInstance();
-        return getChildren(def.getDrumSetList().getName());
+        CCXMLRule def = CCXMLRule.getInstance();
+        return getChildren(def.getDrumSetListTag().getName());
     }
 
     public CCWrapDataList<CCXMLNode> getChildControlChangeMacroList() {
-        CCXMLDefinitions def = CCXMLDefinitions.getInstance();
-        return getChildren(def.getControlChangeMacroList().getName());
+        CCXMLRule def = CCXMLRule.getInstance();
+        return getChildren(def.getControlChangeMacroListTag().getName());
     }
 
     public CCWrapDataList<CCXMLNode> getChildTemplateList() {
-        CCXMLDefinitions def = CCXMLDefinitions.getInstance();
-        return getChildren(def.getTemplateList().getName());
+        CCXMLRule def = CCXMLRule.getInstance();
+        return getChildren(def.getTemplateListTag().getName());
     }
 
     public CCWrapDataList<CCXMLNode> getChildDefaultData() {
-        CCXMLDefinitions def = CCXMLDefinitions.getInstance();
-        return getChildren(def.getDefaultData().getName());
+        CCXMLRule def = CCXMLRule.getInstance();
+        return getChildren(def.getDefaultDataTag().getName());
     }
+
 }

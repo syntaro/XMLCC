@@ -12,6 +12,18 @@ Click nbfs://nbhost/SystemFileSystem/Templates/XML/XMLDocument.xml to edit this 
             また、Treeに関しては、「ShowAttributes][ShowContents]のチェックボックス項目を、
             メニューに追加しておきたい。
         </problem>
+        <feedback date="2023-06-02">
+            実装はできた、すべてのコントロールではないが、バインドした
+        </feedback>
+    </task>
+    <task number="10">
+        <category>XMLの行番号</category>
+        <problem date="2023-06-02">
+            XML読み込み時、行番号に対応する
+        </problem>
+        <feedback date="2023-06-02">
+            実装はできた、次は、これをGUIにバインドすること
+        </feedback>
     </task>
 </root>
 
