@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/XML/XMLDocument.xml to edit this template
+-->
+
+<root>
+    <task number="9">
+        <category>右クリック</category>
+        <problem date="2023-06-01">
+            TextArea, TextField 右クリックでクリップボードを操作したい
+            また、Treeに関しては、「ShowAttributes][ShowContents]のチェックボックス項目を、
+            メニューに追加しておきたい。
+        </problem>
+    </task>
+</root>
+

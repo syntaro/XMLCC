@@ -16,9 +16,10 @@
  */
 package jp.synthtarou.cceditor.view;
 
-import jp.synthtarou.cceditor.view.common.CCTextPrompt;
-import jp.synthtarou.cceditor.view.common.CCPromptUtil;
 import javax.swing.table.DefaultTableModel;
+import jp.synthtarou.cceditor.view.common.CCPromptUtil;
+import jp.synthtarou.cceditor.view.common.CCTextPrompt;
+import jp.synthtarou.cceditor.view.common.IPromptForInput;
 import jp.synthtarou.cceditor.xml.CCXMLNode;
 
 /**
@@ -26,7 +27,9 @@ import jp.synthtarou.cceditor.xml.CCXMLNode;
  * @author Syntarou YOSHIDA
  */
 public class CCV520XMLEditorForTag extends javax.swing.JPanel {
+
     final CCV500XMLRoot _root;
+    CCXMLNode _node;
 
     /**
      * Creates new form DDEditorForTag
@@ -35,20 +38,21 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
         initComponents();
         _root = root;
     }
-    
+
     public void setTargetNode(CCXMLNode node) {
         jTextFieldTagPath.setText(node.getAsPathString());
-        jTextAreaTagText.setText(node.getTextContent());
+        _node = node;
+        jTextAreaTextContent.setText(node.getTextContent());
         DefaultTableModel model = new DefaultTableModel() {
-            @Override 
+            @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
         model.addColumn("Name");
         model.addColumn("Value");
-        for (int i = 0; i < node.countAttribute(); ++ i) {
-            model.addRow(new Object[] { node.getAttributeName(i), node.getAttributeText(i) });
+        for (int i = 0; i < node.countAttribute(); ++i) {
+            model.addRow(new Object[]{node.getAttributeName(i), node.getAttributeText(i)});
         }
         jTable1.setModel(model);
     }
@@ -69,10 +73,11 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
         jButtonDeleteThisTag = new javax.swing.JButton();
         jButtonDuplicateThisTag = new javax.swing.JButton();
         jLabel7 = new javax.swing.JLabel();
-        jScrollPane4 = new javax.swing.JScrollPane();
-        jTextAreaTagText = new javax.swing.JTextArea();
         jTextFieldTagPath = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTextAreaTextContent = new javax.swing.JTextArea();
         jPanel2 = new javax.swing.JPanel();
         jButtonRemoveAttribute = new javax.swing.JButton();
         jButtonAddAttribute = new javax.swing.JButton();
@@ -86,7 +91,7 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jButtonNewChildTag.setText("NewChildTag");
+        jButtonNewChildTag.setText("+Create Child Tag");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 6;
@@ -95,45 +100,26 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jButtonNewChildTag, gridBagConstraints);
 
-        jButtonDeleteThisTag.setText("-DeleteIt");
+        jButtonDeleteThisTag.setText("-Delete ThisTag");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jButtonDeleteThisTag, gridBagConstraints);
 
-        jButtonDuplicateThisTag.setText("Duplicate It");
+        jButtonDuplicateThisTag.setText("+Duplicate Broser Tag");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel1.add(jButtonDuplicateThisTag, gridBagConstraints);
 
-        jLabel7.setText("Tag Text");
+        jLabel7.setText("Text Content");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         jPanel1.add(jLabel7, gridBagConstraints);
-
-        jTextAreaTagText.setEditable(false);
-        jTextAreaTagText.setColumns(20);
-        jTextAreaTagText.setRows(5);
-        jTextAreaTagText.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jTextAreaTagTextMouseClicked(evt);
-            }
-        });
-        jScrollPane4.setViewportView(jTextAreaTagText);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel1.add(jScrollPane4, gridBagConstraints);
 
         jTextFieldTagPath.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -144,11 +130,37 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jTextFieldTagPath, gridBagConstraints);
 
-        jLabel5.setText("Path in XML");
+        jLabel5.setText("Tag Path in XML");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         jPanel1.add(jLabel5, gridBagConstraints);
+
+        jLabel2.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(jLabel2, gridBagConstraints);
+
+        jTextAreaTextContent.setEditable(false);
+        jTextAreaTextContent.setColumns(20);
+        jTextAreaTextContent.setRows(5);
+        jTextAreaTextContent.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jTextAreaTextContentMousePressed(evt);
+            }
+        });
+        jScrollPane2.setViewportView(jTextAreaTextContent);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(jScrollPane2, gridBagConstraints);
 
         jSplitPane3.setLeftComponent(jPanel1);
 
@@ -214,15 +226,15 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
         add(jSplitPane3, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jTextAreaTagTextMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTextAreaTagTextMouseClicked
-        String text = jTextAreaTagText.getText();
-        CCTextPrompt prompt = new CCTextPrompt(text, "Tag Text");
-        CCPromptUtil.showPrompt(this, prompt);
-        text = prompt.getPromptResult();
-        if (text != null) {
-            jTextAreaTagText.setText(text);
+    private void jTextAreaTextContentMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTextAreaTextContentMousePressed
+        CCTextPrompt text = new CCTextPrompt(_node.getTextContent(), "Text Of Tag");
+        CCPromptUtil.showPrompt(this, text);
+        String editedText = text.getPromptResult();
+        if (editedText != null) {
+            _node.setTextContent(editedText);
+            jTextAreaTextContent.setText(editedText);
         }
-    }//GEN-LAST:event_jTextAreaTagTextMouseClicked
+    }//GEN-LAST:event_jTextAreaTextContentMousePressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonAddAttribute;
@@ -230,15 +242,16 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
     private javax.swing.JButton jButtonDuplicateThisTag;
     private javax.swing.JButton jButtonNewChildTag;
     private javax.swing.JButton jButtonRemoveAttribute;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSplitPane jSplitPane3;
     private javax.swing.JTable jTable1;
-    private javax.swing.JTextArea jTextAreaTagText;
+    private javax.swing.JTextArea jTextAreaTextContent;
     private javax.swing.JTextField jTextFieldTagPath;
     // End of variables declaration//GEN-END:variables
 }

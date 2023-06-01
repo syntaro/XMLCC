@@ -20,7 +20,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JLabel;
@@ -32,7 +31,7 @@ import jp.synthtarou.cceditor.Main;
  *
  * @author Syntarou YOSHIDA
  */
-public class AnotherTableEditPanel extends javax.swing.JPanel implements IPrompt<Object> {
+public class AnotherTableEditPanel extends javax.swing.JPanel implements IPrompt {
     @Override
     public JPanel getAsPanel() {
         return this;
@@ -46,16 +45,6 @@ public class AnotherTableEditPanel extends javax.swing.JPanel implements IPrompt
     @Override
     public Dimension getPromptSize() {
         return new Dimension(400, 150);
-    }
-
-    @Override
-    public boolean validatePromptResult() {
-        return true;
-    }
-
-    @Override
-    public Object getPromptResult() {
-        return null;
     }
 
     AnotherTableData _dataBase;

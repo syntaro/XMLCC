@@ -20,16 +20,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.CodeSource;
-import java.security.ProtectionDomain;
 import java.util.Calendar;
 import java.util.Date;
+import jp.synthtarou.cceditor.common.CCUtilities;
 
 /**
  *
@@ -50,29 +46,8 @@ public class CCSettingUtil {
         return true;
     }
    
-   public static File getAppBaseDirectory() {
-        String fileName = null;
-        try {
-            ProtectionDomain pd =CCSetting.class.getProtectionDomain();
-            CodeSource cs = pd.getCodeSource();
-            URL location = cs.getLocation();
-            URI uri = location.toURI();
-            Path path = Paths.get(uri);
-            fileName = path.toString();
-        } catch (URISyntaxException ex) {
-            ex.printStackTrace();;
-        }
-
-        File base = new File(fileName);
-        
-        if (base.isFile()) {
-            base = base.getParentFile();
-        }
-        return base;
-    }
-
     public static File getSettingDirectory() {
-        File dir = new File(getAppBaseDirectory(), "settings");
+        File dir = new File(CCUtilities.getAppBaseDirectory(), "settings");
         if (dir.isDirectory()) {
             return dir;
         }

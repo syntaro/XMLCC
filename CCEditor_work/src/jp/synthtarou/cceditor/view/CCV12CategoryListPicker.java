@@ -21,12 +21,13 @@ import jp.synthtarou.cceditor.view.common.CCPromptUtil;
 import java.awt.Dimension;
 import javax.swing.JPanel;
 import jp.synthtarou.cceditor.common.CCWrapDataList;
+import jp.synthtarou.cceditor.view.common.IPromptForInput;
 
 /**
  *
  * @author Syntarou YOSHIDA
  */
-public class CCV12CategoryListPicker<T> extends javax.swing.JPanel implements IPrompt<T> {
+public class CCV12CategoryListPicker<T> extends javax.swing.JPanel implements IPromptForInput<T> {
     public static CCWrapDataList<String> create(String[] choise) {
         CCWrapDataList<String> list = new CCWrapDataList<>();
         for (String t : choise) {

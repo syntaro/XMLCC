@@ -23,7 +23,7 @@ import javax.swing.JPanel;
  *
  * @author Syntarou YOSHIDA
  */
-public class CCTextPrompt extends javax.swing.JPanel implements IPrompt<String> {
+public class CCTextPrompt extends javax.swing.JPanel implements IPromptForInput<String> {
 
     String _result;
     String _title;

@@ -18,7 +18,7 @@
   <SubComponents>
     <Component class="javax.swing.JButton" name="jButtonEdirXMLCC">
       <Properties>
-        <Property name="text" type="java.lang.String" value="XML CC"/>
+        <Property name="text" type="java.lang.String" value="XML Manager"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButtonEdirXMLCCActionPerformed"/>
@@ -84,7 +84,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="jButtonPort">
       <Properties>
-        <Property name="text" type="java.lang.String" value="MIDI"/>
+        <Property name="text" type="java.lang.String" value="MIDI Manager"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButtonPortActionPerformed"/>

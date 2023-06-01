@@ -33,6 +33,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  *
@@ -43,6 +44,15 @@ public class CCXMLFile {
     final ArrayList<CCXMLNode> _arrayModuleData = new ArrayList<>();
     final File _file;
     final ArrayList<String> _adviceForXML = new ArrayList<>();
+    final Exception _loadError;
+    
+    public String toString() {
+        return  _file.toString();
+    }
+    
+    public boolean isLoaded() {
+        return  (_loadError == null) && countModule() > 0;
+    }
     
     public int countModule() {
         return _arrayModuleData.size();
@@ -86,18 +96,14 @@ public class CCXMLFile {
             if (name.endsWith(".xml")) {
                 if (file.canRead()) {
                     System.out.println("TryRead " + file);
-                    try {
-                        CCXMLFile f2 = new CCXMLFile(file);
-                        f2.dump();
-                    }catch(CCXMLFileException e) {
-                        e.printStackTrace();
-                    }
+                    CCXMLFile f2 = new CCXMLFile(file);
+                    f2.dump();
                 }
             }
         }
     }
 
-    public CCXMLFile(File file) throws CCXMLFileException {
+    public CCXMLFile(File file) {
         _file = file;
 
         DocumentBuilderFactory factory;
@@ -110,16 +116,19 @@ public class CCXMLFile {
         try {
             builder = factory.newDocumentBuilder();
         } catch (ParserConfigurationException ex) {
-            throw new CCXMLFileException(ex);
+            _loadError = ex;
+            return;
         }
         try {
             document = builder.parse(file);
             docElement = document.getDocumentElement();
             list = document.getElementsByTagName("ModuleData");
         } catch (SAXException ex) {
-            throw new CCXMLFileException(ex);
+            _loadError = ex;
+            return;
         } catch (IOException ex) {
-            throw new CCXMLFileException(ex);
+            _loadError = ex;
+            return;
         }
 
         _arrayModuleData.clear();
@@ -134,8 +143,9 @@ public class CCXMLFile {
                 _arrayModuleData.add(doc);
             }
         }
+        _loadError = null;
     }
-
+        
     public void tryRead(CCXMLNode target, Element e) {
         StringBuffer indent = new StringBuffer();
 
@@ -146,13 +156,13 @@ public class CCXMLFile {
             String value = attr.item(x).getNodeValue();
 
             if (target._definition == null) {
-                traceError("Undocumented Tag has Attributes: " + name + "=" + value + " @" + getPathOfNode(e) + " in [" + _file + "]");
+                _adviceForXML.add("Undocumented Tag has Attributes: " + name + "=" + value + " @" + getPathOfNode(e) + " in [" + _file + "]");
                 target._listAttributes.add(new CCXMLAttribute(name, value));
             }
             else if (target._definition.getAttribute(name) != null) {
                 target._listAttributes.add(new CCXMLAttribute(name, value));
             } else {
-                traceError("Undocumented Attributes: " + name + "=" + value + " @" + getPathOfNode(e) + " in [" + _file + "]");
+                _adviceForXML.add("Undocumented Attributes: " + name + "=" + value + " @" + getPathOfNode(e) + " in [" + _file + "]");
                 target._listAttributes.add(new CCXMLAttribute(name, value));
             }
         }
@@ -171,7 +181,7 @@ public class CCXMLFile {
                 if (node.getNodeType() == Node.TEXT_NODE) {
                     String text = shrinkSpace(node.getTextContent());
                     if (text.length() > 0) {
-                        traceError("Undocumented Tag has Text: " + text + " @" + getPathOfNode(e) + " in [" + _file + "]");
+                        _adviceForXML.add("Undocumented Tag has Text: " + text + " @" + getPathOfNode(e) + " in [" + _file + "]");
                         target._textContext = text;
                     }
                 }
@@ -189,7 +199,7 @@ public class CCXMLFile {
             String name = child.getNodeName();
 
             if (target._definition == null) {
-                traceError("Undocumented Tag has SubTag : " + name + " @" + getPathOfNode(e) + " in [" + _file + "]");
+                _adviceForXML.add("Undocumented Tag has SubTag : " + name + " @" + getPathOfNode(e) + " in [" + _file + "]");
                 CCXMLNode childTag = new CCXMLNode(target, null, null);
                 target._listChildTags.add(childTag);
 
@@ -204,7 +214,7 @@ public class CCXMLFile {
                     tryRead(childTag, child);
                 }
                 else {
-                    traceError("Undocumented Tag: " + name + " @" + getPathOfNode(e) + " in [" + _file + "]");
+                    _adviceForXML.add("Undocumented Tag: " + name + " @" + getPathOfNode(e) + " in [" + _file + "]");
                     CCXMLNode childTag = new CCXMLNode(target, null, null);
                     target._listChildTags.add(childTag);
 
@@ -214,25 +224,23 @@ public class CCXMLFile {
         }
     }
     
-    public void traceError(String text) {
-        _adviceForXML.add(text);
-    }
-
     public void dump() {
-        System.out.println("Dumping For File [" + _file + "]" + _arrayModuleData.size());
-        for (CCXMLNode node : _arrayModuleData) {
-            dump(0, node);
+        System.out.println("XMLFile [" + _file + "]");
+        System.out.println(getAdviceForXML());
+        for (int i = 0; i < _arrayModuleData.size(); ++ i) {
+            System.out.println("Dumping " + (i+1) + " / " + _arrayModuleData.size());
+            dump(0, _arrayModuleData.get(i));
         }
     }
 
-    public void dump(int indent, CCXMLNode node) {
+    public void dump(int indent, CCXMLNode module) {
         StringBuffer strIndent = new StringBuffer();
         for (int i = 0; i < indent; ++i) {
             strIndent.append("....");
         }
 
         StringBuffer strAttributes = new StringBuffer();
-        for (CCXMLAttribute attr : node._listAttributes) {
+        for (CCXMLAttribute attr : module._listAttributes) {
             strAttributes.append("[");
             strAttributes.append(attr.getName());
             strAttributes.append("=");
@@ -240,13 +248,13 @@ public class CCXMLFile {
             strAttributes.append("]");
         }
 
-        System.out.println(strIndent.toString() + "\"" + node._name + "\"" + strAttributes.toString());
+        System.out.println(strIndent.toString() + "\"" + module._name + "\"" + strAttributes.toString());
 
-        if (node._definition.hasTextContents()) {
-            System.out.println(strIndent.toString() + "=" + node._textContext);
+        if (module._definition.hasTextContents()) {
+            System.out.println(strIndent.toString() + "=" + module._textContext);
         }
 
-        for (CCXMLNode child : node._listChildTags) {
+        for (CCXMLNode child : module._listChildTags) {
             dump(indent + 1, child);
         }
     }
@@ -303,6 +311,16 @@ public class CCXMLFile {
     }
     
     public String getAdviceForXML() {
+        if (_loadError != null) {
+            if (_loadError instanceof SAXParseException) {
+                SAXParseException saxe = (SAXParseException)_loadError;
+                return "XML Error at Line " + saxe.getLineNumber() + ", Column " + saxe.getColumnNumber() + "\n -> " + saxe.getMessage();
+            }
+            return "Error: " + _loadError.getMessage();
+        }
+        if (countModule() == 0) {
+            return "Error, This XML Don't have '<Module>'";
+        }
         StringBuffer str = new StringBuffer();
         for (String text : _adviceForXML) {
             if (str.length() > 0) {

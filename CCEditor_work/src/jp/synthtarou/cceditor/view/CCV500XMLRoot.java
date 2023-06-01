@@ -20,14 +20,15 @@ import jp.synthtarou.cceditor.view.common.IPrompt;
 import java.awt.Dimension;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import jp.synthtarou.cceditor.xml.CCXMLFile;
 import jp.synthtarou.cceditor.xml.CCXMLNode;
 
 /**
  *
  * @author Syntarou YOSHIDA
  */
-public class CCV500XMLRoot extends javax.swing.JPanel implements IPrompt<Object>{
-    private final CCV510XMLNavigator _xmlBrowser;
+public class CCV500XMLRoot extends javax.swing.JPanel implements IPrompt {
+    private final CCV510XMLTagTree _xmlBrowser;
     private final CCV520XMLEditorForTag _editorForTag;
     private final CCV530XMLEditorForCC _editorForCC;
     private final CCV540XMLEditorForInstruments _editorForInst;
@@ -35,10 +36,10 @@ public class CCV500XMLRoot extends javax.swing.JPanel implements IPrompt<Object>
     /**
      * Creates new form Panel00MainEditor
      */
-    public CCV500XMLRoot() {
+    public CCV500XMLRoot(CCXMLFile file) {
         initComponents();
 
-        _xmlBrowser = new CCV510XMLNavigator(this);
+        _xmlBrowser = new CCV510XMLTagTree(this, file);
         _editorForTag = new CCV520XMLEditorForTag(this);
         _editorForCC = new CCV530XMLEditorForCC(this);
         _editorForInst = new CCV540XMLEditorForInstruments(this);
@@ -90,15 +91,5 @@ public class CCV500XMLRoot extends javax.swing.JPanel implements IPrompt<Object>
     @Override
     public Dimension getPromptSize() {
         return new Dimension(900, 500);
-    }
-
-    @Override
-    public Object getPromptResult() {
-        return null;
-    }
-
-    @Override
-    public boolean validatePromptResult() {
-        return true;
     }
 }

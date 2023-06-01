@@ -38,7 +38,7 @@ public class MyComboBoxRenderer1 extends BasicComboBoxRenderer {
 
     public void setText(String text) {
         _text = text;
-        super.setText(" "); //for calculate minimum size
+        super.setText(text.length() < 12 ? text : text.substring(0, 12)); //for calculate minimum size
     }
 
     private static final int LENGTH = 20;

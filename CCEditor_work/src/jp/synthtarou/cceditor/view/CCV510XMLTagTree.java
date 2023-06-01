@@ -16,42 +16,78 @@
  */
 package jp.synthtarou.cceditor.view;
 
-import jp.synthtarou.cceditor.view.common.CCFileExtensionFilter;
-import jp.synthtarou.cceditor.view.common.IPrompt;
-import jp.synthtarou.cceditor.view.common.CCFolderBrowser;
-import jp.synthtarou.cceditor.view.common.CCPromptUtil;
 import java.awt.Dimension;
-import java.io.File;
-import java.io.FileFilter;
-import javax.swing.JOptionPane;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JPanel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import jp.synthtarou.cceditor.common.CCGlobalTimer;
-import jp.synthtarou.cceditor.common.CCWrapDataList;
+import jp.synthtarou.cceditor.view.common.ClipboardMenuItems;
+import jp.synthtarou.cceditor.view.common.IPromptForInput;
 import jp.synthtarou.cceditor.view.common.MyComboBoxRenderer1;
 import jp.synthtarou.cceditor.xml.CCXMLFile;
-import jp.synthtarou.cceditor.xml.CCXMLFileException;
 import jp.synthtarou.cceditor.xml.CCXMLNode;
 import jp.synthtarou.cceditor.xml.CCXMLTreeModel;
+import jp.synthtarou.cceditor.xml.CCXMLTreeRenderer;
 
 /**
  *
  * @author Syntarou YOSHIDA
  */
-public class CCV510XMLNavigator extends javax.swing.JPanel implements IPrompt<CCXMLFile> {
-
-    CCV500XMLRoot _parent;
-
+public class CCV510XMLTagTree extends javax.swing.JPanel implements IPromptForInput<CCXMLFile> {
+    final CCXMLFile _file;
+    final CCV500XMLRoot _root;
+    final JCheckBoxMenuItem _checkAttribute;
+    final JCheckBoxMenuItem _checkTextContent;
+    
     /**
      * Creates new form XMLView
      */
-    public CCV510XMLNavigator(CCV500XMLRoot parent) {
+    public CCV510XMLTagTree(CCV500XMLRoot root, CCXMLFile file){
         initComponents();
-        _parent = parent;
+        _file = file;
+        _root = root;
         jComboBoxModule.setRenderer(new MyComboBoxRenderer1());
+
+        jComboBoxModule.setModel(_file.listModules());
+        CCXMLTreeModel model = new CCXMLTreeModel(_file.getModule(0));
+        jTreeDDFile.setModel(model);
+        jTreeDDFile.setCellRenderer(new CCXMLTreeRenderer());
+
+        _checkAttribute = new JCheckBoxMenuItem("Show Attributes");
+        _checkTextContent = new JCheckBoxMenuItem("Show TextContent");
+        
+        _checkAttribute.setSelected(CCXMLTreeRenderer._displayAttribute);
+        _checkTextContent.setSelected(CCXMLTreeRenderer._displayTextContent);
+
+        _checkAttribute.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                CCXMLTreeRenderer._displayAttribute = _checkAttribute.isSelected();
+                jTreeDDFile.updateUI();
+            }
+        });
+        _checkTextContent.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                CCXMLTreeRenderer._displayTextContent = _checkAttribute.isSelected();
+                jTreeDDFile.updateUI();
+            }
+        });
+
+        ClipboardMenuItems clip = new ClipboardMenuItems(jTreeDDFile);
+        clip.insertBeforeThis(_checkAttribute);
+        clip.insertBeforeThis(_checkTextContent);
+        clip.insertBeforeThis(null);
+        
+        new ClipboardMenuItems(jTextAreaErrorView);
+        new ClipboardMenuItems(jTextFieldXMLPath);
+
+        updateUI();;
     }
 
     /**
@@ -71,7 +107,6 @@ public class CCV510XMLNavigator extends javax.swing.JPanel implements IPrompt<CC
         jLabel2 = new javax.swing.JLabel();
         jComboBoxModule = new javax.swing.JComboBox<>();
         jLabel1 = new javax.swing.JLabel();
-        jButtonOpenFile = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
         jTextFieldXMLPath = new javax.swing.JTextField();
         jPanel5 = new javax.swing.JPanel();
@@ -123,18 +158,6 @@ public class CCV510XMLNavigator extends javax.swing.JPanel implements IPrompt<CC
 
         jLabel1.setText("File Path");
         jPanel6.add(jLabel1, new java.awt.GridBagConstraints());
-
-        jButtonOpenFile.setText("Open File");
-        jButtonOpenFile.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonOpenFileActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        jPanel6.add(jButtonOpenFile, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -184,7 +207,7 @@ public class CCV510XMLNavigator extends javax.swing.JPanel implements IPrompt<CC
 
     @Override
     public CCXMLFile getPromptResult() {
-        return _targetDDFile;
+        return _file;
     }
 
     @Override
@@ -216,57 +239,9 @@ public class CCV510XMLNavigator extends javax.swing.JPanel implements IPrompt<CC
 
     }//GEN-LAST:event_jTreeDDFileValueChanged
 
-    CCXMLFile _targetDDFile;
-
-    private void jButtonOpenFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonOpenFileActionPerformed
-        FileFilter filter = new CCFileExtensionFilter(new String[]{".xml"});
-        CCFolderBrowser chooser = new CCFolderBrowser(new File("C:/Domino144/Module"), filter);
-        CCPromptUtil.showPrompt(this, chooser);
-        File file = chooser.getSelectedFile();
-        if (file != null) {
-            if (file.isFile() == false) {
-                JOptionPane.showMessageDialog(this, "Choose File");
-                return;
-            }
-            _targetDDFile = null;
-            jTextFieldXMLPath.setText("");
-            jTextAreaErrorView.setText("");
-            try {
-                _targetDDFile = new CCXMLFile(file);
-                if (_targetDDFile.countModule() < 1) {
-                    jTextAreaErrorView.setText("No Module Content");
-                    return;
-                }
-                jTextAreaErrorView.setText(_targetDDFile.getAdviceForXML());
-
-                CCWrapDataList<CCXMLNode> listModules = _targetDDFile.listModules();
-                if (listModules.size() == 0) {
-                    jTreeDDFile.setModel(createEmptyMessage());
-                } else {
-                    jComboBoxModule.setModel(listModules);
-                    CCXMLTreeModel model = new CCXMLTreeModel(_targetDDFile.getModule(0));
-                    jTreeDDFile.setModel(model);
-                    jTextFieldXMLPath.setText(file.getName());
-                }
-            } catch (CCXMLFileException ex) {
-                StringBuffer text = new StringBuffer();
-                String message = ex.getMessage();
-                StackTraceElement[] listTrace = ex.getStackTrace();
-                text.append("Error [" + message + "] StackTrace \n");
-                for (int i = 0; i < listTrace.length; ++i) {
-                    StackTraceElement trace = listTrace[i];
-                    text.append("  @" + trace.getClassName() + ":" + trace.getMethodName());
-                    text.append("\n");
-                }
-                jTextAreaErrorView.setText(text.toString());
-            }
-            jTextAreaErrorView.setCaretPosition(0);
-        }
-    }//GEN-LAST:event_jButtonOpenFileActionPerformed
-
     private void jComboBoxModuleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxModuleActionPerformed
         int sel = jComboBoxModule.getSelectedIndex();
-        CCXMLTreeModel model = new CCXMLTreeModel(_targetDDFile.getModule(sel));
+        CCXMLTreeModel model = new CCXMLTreeModel(_file.getModule(sel));
         jTreeDDFile.setModel(model);
 
     }//GEN-LAST:event_jComboBoxModuleActionPerformed
@@ -277,7 +252,7 @@ public class CCV510XMLNavigator extends javax.swing.JPanel implements IPrompt<CC
             Object[] path = selected.getPath();
             if (path != null && path.length > 0) {
                 CCXMLNode node = (CCXMLNode) path[path.length - 1];
-                _parent.setTargetNode(node);
+                _root.setTargetNode(node);
             }
 
         }
@@ -291,7 +266,6 @@ public class CCV510XMLNavigator extends javax.swing.JPanel implements IPrompt<CC
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButtonOpenFile;
     private javax.swing.JComboBox<String> jComboBoxModule;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

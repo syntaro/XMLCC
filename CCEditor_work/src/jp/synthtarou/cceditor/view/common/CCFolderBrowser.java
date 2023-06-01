@@ -16,10 +16,7 @@
  */
 package jp.synthtarou.cceditor.view.common;
 
-import jp.synthtarou.cceditor.view.common.CCPromptUtil;
-import jp.synthtarou.cceditor.view.common.IPrompt;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -47,7 +44,7 @@ import javax.swing.tree.TreePath;
  *
  * @author Syntarou YOSHIDA
  */
-public class CCFolderBrowser extends javax.swing.JPanel implements IPrompt {
+public class CCFolderBrowser extends javax.swing.JPanel implements IPromptForInput<File> {
 
     FileSystemView _view = FileSystemView.getFileSystemView();
     DefaultTreeModel _model;
@@ -60,8 +57,9 @@ public class CCFolderBrowser extends javax.swing.JPanel implements IPrompt {
     public static void main(String[] args) {
         FileFilter filter = new CCFileExtensionFilter(new String[]{".xml"});
         CCFolderBrowser chooser = new CCFolderBrowser(new File("C:/Domino144/Module"), filter);
-        CCPromptUtil.showDialog(null, chooser);
+        CCPromptUtil.showPanelForTest(null, chooser);
         System.out.println("Return " + chooser.getSelectedFile());
+        System.exit(0);
     }
 
     public static final boolean APPROVE_OPTION = true;
@@ -316,7 +314,7 @@ public class CCFolderBrowser extends javax.swing.JPanel implements IPrompt {
     }
 
     @Override
-    public Object getPromptResult() {
+    public File getPromptResult() {
         return _result;
     }
 

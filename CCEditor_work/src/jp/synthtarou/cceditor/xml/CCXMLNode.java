@@ -54,75 +54,13 @@ public class CCXMLNode  {
     public String getTextContent() {
         return _textContext;
     }
+
+    public void setTextContent(String text) {
+        _textContext = text;
+    }
     
     public CCXMLDefTag getDefinition() {
         return _definition;
-    }
-    
-    public String toString() {
-        ArrayList<String> ret1 = new ArrayList();
-        ArrayList<String> ret2 = new ArrayList();
-
-        if (_definition != null) {
-            HashSet<String> already = new HashSet();
-            
-            for (CCXMLDefAttributes dump :  _definition.listAttributes()) {
-                String name = dump.getName();
-                String value = getAttributeValue(name);
-                if (value != null) {
-                    ret1.add(name + "=" + value);
-                }
-                already.add(name.toLowerCase());
-            }
-            
-            for (CCXMLAttribute attr : _listAttributes) {
-                String name = attr.getName();
-                String value = attr.getValue();
-                if (already.contains(name.toLowerCase())) {
-                    continue;
-                }
-                ret2.add(name + "="  + value);
-            }
-        }
-        else {
-            for (CCXMLAttribute attr : _listAttributes) {
-                String name = attr.getName();
-                String value = attr.getValue();
-                ret2.add(name + "="  + value);
-            }
-        }
-        StringBuffer text = new StringBuffer();
-        text.append(_name);
-        if (ret1.size() > 0) {
-            boolean first = true;
-            text.append("[");
-            for (String seg : ret1) {
-                if (!first)  {
-                    text.append(", ");
-                }
-                first = false;
-                text.append(seg);
-            }
-            text.append("]");
-        }
-        if (ret2.size() > 0) {
-            boolean first = true;
-            text.append("(");
-            for (String seg : ret1) {
-                if (!first)  {
-                    text.append(", ");
-                }
-                first = false;
-                text.append(seg);
-            }
-            text.append(")");
-        }
-        if (_textContext != null && _textContext.length() > 0) {
-            text.append("=\"");
-            text.append(_textContext);
-            text.append("=\"");
-        }
-        return text.toString();
     }
     
     public int countAttribute() {

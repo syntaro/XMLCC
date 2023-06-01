@@ -20,6 +20,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.Window;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -33,27 +34,46 @@ import static jp.synthtarou.cceditor.common.CCUtilities.getOwnerWindow;
  * @author Syntarou YOSHIDA
  */
 public class CCPromptUtil {
-    public static void showDialog(Container parent, JPanel panel) {
+    static class MyModalWindow extends JDialog {
+
+        public MyModalWindow(Window parent) {
+            super(parent);
+        }
+
+        public MyModalWindow(Dialog parent) {
+            super(parent);
+        }
+    }
+    
+    public static void showPanelForTest(Container parent, JPanel panel) {
         Container cont = getOwnerWindow(parent);
         String title = Main.TITLE;
 
-        JDialog child = null;
-        if (cont instanceof Window) {
-            Window W = (Window) cont;
-            child = new JDialog(W, title);
+        MyModalWindow modal = null;
+        if (cont instanceof Frame) {
+            Frame F = (Frame) cont;
+            modal = new MyModalWindow(F);
         } else if (cont instanceof Dialog) {
             Dialog D = (Dialog) cont;
-            child = new JDialog(D, title);
+            modal = new MyModalWindow(D);
+        } else if (cont instanceof Window) {
+            Window W = (Window)cont;
+            modal = new MyModalWindow(W);
         } else {
-            child = new JDialog((Window) parent, title);
+            modal = new MyModalWindow(null);
         }
-        child.setModal(true);
-        child.getContentPane().add(panel, "Center");
-        child.pack();
-
-        centerWindow(child);
+        //modal.setLayout(new BoxLayout(modal, BoxLayout.LINE_AXIS));
+        modal.add(panel, null);
+        modal.pack();
+        modal.setModal(true);
+        if (panel instanceof IPrompt) {
+            IPrompt prompt = (IPrompt)panel;
+            modal.setTitle(prompt.getPromptTitle());
+            modal.setSize(prompt.getPromptSize());
+        }
+        centerWindow(modal);
         panel.requestFocusInWindow();
-        child.setVisible(true);
+        modal.setVisible(true);
     }
     
     public static void closeAnyway(IPrompt prompt) {
@@ -70,7 +90,7 @@ public class CCPromptUtil {
         }
     }
 
-    private static void closeWithValidate(IPrompt prompt) {
+    private static void closeWithValidate(IPromptForInput prompt) {
         // implementation example
         if (prompt.validatePromptResult()) {
             closeAnyway(prompt);
@@ -119,7 +139,9 @@ public class CCPromptUtil {
         prompt.getAsPanel().requestFocusInWindow();
         child.setVisible(true);
         
-        Object result = prompt.getPromptResult();
-        return result;
+        if (prompt instanceof IPromptForInput) {
+            return ((IPromptForInput)prompt).getPromptResult();
+        }
+        return null;
     }
 }

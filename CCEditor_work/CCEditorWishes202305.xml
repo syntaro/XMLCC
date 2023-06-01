@@ -14,9 +14,16 @@ Click nbfs://nbhost/SystemFileSystem/Templates/XML/XMLDocument.xml to edit this 
             AppBaseDir/Editing/Oldフォルダに編集履歴が保管される。
             開いた状態にしたDomino定義ファイルのリストに、「+Add」ボタンで追加する形式。
         </problem>
-        <solution>
-        </solution>
-        <feedback>
+        <feedback date="2023-06-01">
+            インポート成功
+            Editingフォルダにコピー成功
+            Editingフォルダから開いた場合、コピーせずに開くようにした。
+            Oldフォルダへの移動成功、+Plug、-Minusの動作成功
+            Oldフォルダ内の重複ファイルを検索するユーティリティ画面がほしい
+
+            設定ファイルに保存する際、絶対パスではなく、AppBaseDir/Editinからの相対パスとしたい
+            そして、Settingファイルに相対パスを記録して、次回起動で読み込みたい
+            XMLParserが警告を出すとき、XML上での場所を記録したい
         </feedback>
     </task>
     <task number="2">
@@ -26,6 +33,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/XML/XMLDocument.xml to edit this 
             開いた状態にするには「+Add」ボタンにより、ピックアップダイアログが表示され、ピックアップすること。
             開いた状態のリストの行に、開かれているDomino定義ファイルから、割りあてることができる。
             （割り当てても意味をもたないので省略可能）
+        </problem>
     </task>
     <task number="3">
         <category>画面追加</category>

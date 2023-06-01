@@ -7,7 +7,7 @@
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * but WITHOUT ANY WARRANTY; without even the implied warranty ofr
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -21,23 +21,36 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import jp.synthtarou.cceditor.view.common.CCFileChooser;
 
 /**
  *
  * @author Syntarou YOSHIDA
  */
 public class CCUtilities {
+
     public static String toHexFF(int i) {
         String str = Integer.toHexString(i).toUpperCase();
         if (str.length() == 1) {
@@ -59,17 +72,17 @@ public class CCUtilities {
         }
         return str.toString();
     }
-    
+
     public static boolean isNumberFormat(String text) {
         try {
             numberFromText(text, true);
             return true;
-        }catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
         }
         return false;
     }
- 
-    public static final int numberFromText(String text, boolean strict)  {
+
+    public static final int numberFromText(String text, boolean strict) {
         int mum = 10;
 
         if (text.startsWith("0x")) {
@@ -80,10 +93,10 @@ public class CCUtilities {
             text = text.substring(0, text.length() - 1);
             mum = 16;
         }
-        
+
         int start = 0;
         int end = text.length();
-        
+
         if (start >= end) {
             if (strict) {
                 throw new NumberFormatException(text);
@@ -92,7 +105,7 @@ public class CCUtilities {
         }
 
         int x = 0;
-        for (int pos = start; pos < end; ++ pos) {
+        for (int pos = start; pos < end; ++pos) {
             int ch = text.charAt(pos);
             if (ch >= '0' && ch <= '9') {
                 x *= mum;
@@ -112,7 +125,7 @@ public class CCUtilities {
         }
         return x;
     }
-    
+
     public static boolean searchTextIgnoreCase(String text, String words) {
         text = text.toLowerCase();
         words = words.toLowerCase();
@@ -200,15 +213,13 @@ public class CCUtilities {
             }
             if (column == table.getColumnCount() - 1) {
                 columnModel.getColumn(column).setPreferredWidth(totalWidth);
-            }
-            else {
+            } else {
                 totalWidth -= width;
                 columnModel.getColumn(column).setPreferredWidth(width);
             }
         }
     }
 
-    
     public static void autoResizeTableLastColumnWidth(JScrollPane ownwer, JTable table) {
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
@@ -222,13 +233,12 @@ public class CCUtilities {
             int width = columnModel.getColumn(column).getWidth();
             if (column == table.getColumnCount() - 1) {
                 columnModel.getColumn(column).setPreferredWidth(totalWidth);
-            }
-            else {
+            } else {
                 totalWidth -= width;
             }
         }
     }
-    
+
     public static Container getOwnerWindow(Component panel) {
         while (panel != null) {
             if (panel instanceof Window) {
@@ -268,36 +278,36 @@ public class CCUtilities {
         int rb = (int) (right.getBlue() * percent / 100);
         return new Color(lr + rr, lg + rg, lb + rb);
     }
-    
+
     public static void backgroundRecursive(Container container, Color color) {
         LinkedList<Container> listContainer = new LinkedList();
         listContainer.add(container);
-        
-        while(listContainer.isEmpty() == false) {
+
+        while (listContainer.isEmpty() == false) {
             Container cont = listContainer.remove();
             if (cont == null) {
                 continue;
             }
             cont.setBackground(color);
-            
+
             Component[] list = cont.getComponents();
             for (Component child : list) {
                 if (child instanceof Container) {
-                    listContainer.add((Container)child);
-                }else {
+                    listContainer.add((Container) child);
+                } else {
                     child.setBackground(color);
                 }
             }
         }
     }
-    
+
     public static boolean isShrinkTarget(char c) {
         if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
             return true;
         }
         return false;
     }
-    
+
     public static String shrinkText(String text) {
         if (text == null) {
             return null;
@@ -308,14 +318,48 @@ public class CCUtilities {
         int start = 0;
         int end = text.length() - 1;
         while (start <= end && isShrinkTarget(text.charAt(start))) {
-            start ++;
+            start++;
         }
         while (start <= end && isShrinkTarget(text.charAt(end))) {
-            end ++;
+            end++;
         }
         if (start > end) {
             return "";
         }
         return text.substring(start, end);
+    }
+
+    public static String getStackTraceAsString(Throwable th) {
+        StringBuffer ret = new StringBuffer();
+        StackTraceElement[] elems = th.getStackTrace();
+        ret.append(th.toString());
+        for (int i = 1; i < elems.length; ++i) {
+            StackTraceElement x = elems[i];
+            ret.append("\n    ");
+            ret.append(x.toString());
+        }
+        return ret.toString();
+    }
+
+    public static File getAppBaseDirectory() {
+        String fileName = null;
+        try {
+            ProtectionDomain pd = CCFileChooser.class.getProtectionDomain();
+            CodeSource cs = pd.getCodeSource();
+            URL location = cs.getLocation();
+            URI uri = location.toURI();
+            Path path = Paths.get(uri);
+            fileName = path.toString();
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(CCUtilities.class.getName()).log(Level.SEVERE, null, ex);
+            return new File(".");
+        }
+
+        File base = new File(fileName);
+
+        if (base.isFile()) {
+            base = base.getParentFile();
+        }
+        return base;
     }
 }

@@ -14,26 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package jp.synthtarou.settings;
+package jp.synthtarou.cceditor.view.common;
 
 /**
  *
  * @author Syntarou YOSHIDA
  */
-public class MXSettingException extends Exception {
-    public MXSettingException() {
-        super();
-    }
-
-    public MXSettingException(String name) {
-        super(name);
-    }
-
-    public MXSettingException(Throwable cause) {
-        super(cause);
-    }
-
-    public MXSettingException(String name, Throwable cause) {
-        super(name, cause);
-    }
+public interface IPromptForInput<T> extends IPrompt {
+    public boolean validatePromptResult();
+    public T getPromptResult();
 }

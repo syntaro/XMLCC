@@ -3,7 +3,13 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/github/CCEditor_work/src/jp/synthtarou/cceditor/CCEditorWishes202305.xml</file>
+            <file>file:/C:/github/CCEditor_work/src/jp/synthtarou/cceditor/view/CCV500XMLRoot.java</file>
+            <file>file:/C:/github/CCEditor_work/src/jp/synthtarou/cceditor/xml/CCXMLAttribute.java</file>
+            <file>file:/C:/github/CCEditor_work/src/jp/synthtarou/cceditor/view/CCV510XMLTagTree.java</file>
+            <file>file:/C:/github/CCEditor_work/src/jp/synthtarou/cceditor/xml/CCXMLManager.java</file>
+            <file>file:/C:/github/CCEditor_work/src/jp/synthtarou/cceditor/xml/CCXMLTreeModel.java</file>
+            <file>file:/C:/github/CCEditor_work/src/jp/synthtarou/cceditor/xml/CCXMLNode.java</file>
+            <file>file:/C:/github/CCEditor_work/src/jp/synthtarou/cceditor/xml/CCXMLTreeRenderer.java</file>
         </group>
     </open-files>
 </project-private>

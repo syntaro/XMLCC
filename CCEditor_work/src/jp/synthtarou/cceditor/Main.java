@@ -23,6 +23,9 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import jp.synthtarou.cceditor.settings.CCSetting;
 
 /**
  *

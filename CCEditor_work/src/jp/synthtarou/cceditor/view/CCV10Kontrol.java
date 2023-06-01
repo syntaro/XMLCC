@@ -23,6 +23,7 @@ import jp.synthtarou.cceditor.view.common.AnotherTableData2;
 import jp.synthtarou.cceditor.view.common.IPrompt;
 import jp.synthtarou.cceditor.view.common.CCPromptUtil;
 import jp.synthtarou.cceditor.common.CCUtilities;
+import jp.synthtarou.cceditor.xml.CCXMLManagerPanel;
 
 /**
  *
@@ -95,7 +96,7 @@ public class CCV10Kontrol extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jButtonEdirXMLCC.setText("XML CC");
+        jButtonEdirXMLCC.setText("XML Manager");
         jButtonEdirXMLCC.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonEdirXMLCCActionPerformed(evt);
@@ -148,7 +149,7 @@ public class CCV10Kontrol extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(jButtonValue, gridBagConstraints);
 
-        jButtonPort.setText("MIDI");
+        jButtonPort.setText("MIDI Manager");
         jButtonPort.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonPortActionPerformed(evt);
@@ -209,7 +210,7 @@ public class CCV10Kontrol extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonEdirXMLCCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEdirXMLCCActionPerformed
-        IPrompt panel = new CCV500XMLRoot();
+        CCXMLManagerPanel panel = new CCXMLManagerPanel();
         CCPromptUtil.showPrompt(this, panel);
     }//GEN-LAST:event_jButtonEdirXMLCCActionPerformed
 
@@ -219,12 +220,9 @@ public class CCV10Kontrol extends javax.swing.JPanel {
     }//GEN-LAST:event_jButtonPortActionPerformed
 
     private void jButtonEditOneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditOneActionPerformed
-        // TODO add your handling code here:
         int row = jTable1.getSelectedRow();
         if (row >= 0) {
-            if (_model.startEdit(this, row)) {             
-                System.err.println("startEdit Model");
-            }
+            _model.startEdit(this, row);
             jTable1.setModel(_model);
             updateUI();
         }

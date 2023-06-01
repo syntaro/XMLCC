@@ -20,43 +20,17 @@ package jp.synthtarou.cceditor.view.common;
 import javax.swing.JOptionPane;
 import javax.swing.JFileChooser;
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.CodeSource;
-import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import javax.swing.filechooser.FileFilter;
+import jp.synthtarou.cceditor.common.CCUtilities;
 
 /**
  *
  * @author Syntarou YOSHIDA
  */
 public class CCFileChooser extends JFileChooser {
-   public static File getAppBaseDirectory() {
-        String fileName = null;
-        try {
-            ProtectionDomain pd =CCFileChooser.class.getProtectionDomain();
-            CodeSource cs = pd.getCodeSource();
-            URL location = cs.getLocation();
-            URI uri = location.toURI();
-            Path path = Paths.get(uri);
-            fileName = path.toString();
-        } catch (URISyntaxException ex) {
-            ex.printStackTrace();;
-        }
 
-        File base = new File(fileName);
-        
-        if (base.isFile()) {
-            base = base.getParentFile();
-        }
-        return base;
-    }
-
-    static File currentDir = getAppBaseDirectory().getAbsoluteFile();
+    static File currentDir = CCUtilities.getAppBaseDirectory().getAbsoluteFile();
 
     public static File getStartDirectory() {
         return currentDir;

@@ -56,17 +56,13 @@ public abstract class AnotherTableData extends AbstractTableModel {
         return getValueAsText(rowIndex, columnIndex);
     }
     
-    public boolean startEdit(Container parent, int row) {
+    public void startEdit(Container parent, int row) {
         IPrompt editor = getRowEditor(parent, row);
         CCPromptUtil.showPrompt(parent, editor);
-        if (editor.getPromptResult() != null) {
-            return true;
-        }
-        return false;
     }
     
     public boolean startCellEdit(Container parent, int row, int column) {
-        IPrompt editor = getCellEditor(parent, row, column);
+        IPromptForInput editor = getCellEditor(parent, row, column);
         CCPromptUtil.showPrompt(parent, editor);
         Object result = editor.getPromptResult();
         if (result != null) {
@@ -80,5 +76,5 @@ public abstract class AnotherTableData extends AbstractTableModel {
     
     public abstract IPrompt getRowEditor(Component parent, int rowIndex);
 
-    public abstract IPrompt getCellEditor(Component parent, int rowIndex, int cellIndex);
+    public abstract IPromptForInput getCellEditor(Component parent, int rowIndex, int cellIndex);
 }

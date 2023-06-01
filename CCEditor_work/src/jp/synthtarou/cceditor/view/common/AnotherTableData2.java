@@ -43,14 +43,14 @@ public class AnotherTableData2 extends AnotherTableData {
 
     @Override
     public IPrompt getRowEditor(Component parent, int rowIndex) {
-        IPrompt<Object> editor = new AnotherTableEditPanel(this, rowIndex);
+        IPrompt editor = new AnotherTableEditPanel(this, rowIndex);
         return editor;
     }
 
     @Override
-    public IPrompt getCellEditor(Component parent, int rowIndex, int columnIndex) {
+    public IPromptForInput getCellEditor(Component parent, int rowIndex, int columnIndex) {
         String text = getValueAsText(rowIndex, columnIndex);
-        IPrompt<String> editor = new CCTextPrompt(text, "Text");
+        IPromptForInput<String> editor = new CCTextPrompt(text, "Text");
         return editor;
     }
 

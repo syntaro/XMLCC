@@ -16,7 +16,6 @@
  */
 package jp.synthtarou.cceditor.common;
 
-import jp.synthtarou.cceditor.log.CCLogger;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ComboBoxModel;
@@ -29,8 +28,6 @@ import javax.swing.event.ListDataListener;
  * @author Syntarou YOSHIDA
  */
 public class CCWrapDataList<T> extends ArrayList<CCWrapData<T>> implements ListModel, ComboBoxModel {
-    private static final CCLogger _debug = new CCLogger(CCWrapDataList.class);
-
     boolean _ignoreCase = false;
 
     public CCWrapDataList() {

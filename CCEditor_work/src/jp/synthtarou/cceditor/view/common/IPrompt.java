@@ -23,10 +23,8 @@ import javax.swing.JPanel;
  *
  * @author Syntarou YOSHIDA
  */
-public interface IPrompt<T> {
+public interface IPrompt {
     public JPanel getAsPanel();
     public String getPromptTitle();
     public Dimension getPromptSize();
-    public boolean validatePromptResult();
-    public T getPromptResult();
 }

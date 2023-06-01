@@ -19,13 +19,12 @@ package jp.synthtarou.cceditor.view;
 import jp.synthtarou.cceditor.view.common.IPrompt;
 import java.awt.Dimension;
 import javax.swing.JPanel;
-import jp.synthtarou.cceditor.view.common.CCPromptUtil;
 
 /**
  *
  * @author Syntarou YOSHIDA
  */
-public class CCV14MIDISelector extends javax.swing.JPanel implements IPrompt<Object>{
+public class CCV14MIDISelector extends javax.swing.JPanel implements IPrompt {
 
     /** Creates new form Panel011PortOutput */
     public CCV14MIDISelector() {
@@ -175,15 +174,4 @@ public class CCV14MIDISelector extends javax.swing.JPanel implements IPrompt<Obj
     public Dimension getPromptSize() {
         return new Dimension(700, 400);
     }
-
-    @Override
-    public Object getPromptResult() {
-        return null;
-    }
-
-    @Override
-    public boolean validatePromptResult() {
-        return true;
-    }
-
 }
