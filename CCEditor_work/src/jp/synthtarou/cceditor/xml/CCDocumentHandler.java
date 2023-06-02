@@ -17,18 +17,17 @@
 package jp.synthtarou.cceditor.xml;
 
 import java.io.File;
-import java.util.ArrayList;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import java.util.LinkedList;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import static jp.synthtarou.cceditor.xml.CCXMLFile.getPathOfNode;
+import jp.synthtarou.cceditor.xml.definition.CCXMLRule;
+import jp.synthtarou.cceditor.xml.definition.CCXMLTagRule;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.UserDataHandler;
 import org.xml.sax.Attributes;
@@ -40,23 +39,15 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Syntarou YOSHIDA
  */
 public class CCDocumentHandler extends DefaultHandler {
-    public static final String USERDATA_STARTLINE = "startLineNumber"; 
-    public static final String USERDATA_STARTCOLUMN = "startColumnNumber";     
+    public static final String USERDATA_PATH = "user.path"; 
+    public static final String USERDATA_STARTLINE = "user.startLine"; 
+    public static final String USERDATA_STARTCOLUMN = "user.startColumn";     
 
-    ArrayList<String> _listForPathName = new ArrayList();
-    DocumentBuilder _builder;
-    Document _document;
-    ArrayList<Element> _nestedPosition = new ArrayList();
+    LinkedList<CCXMLNode> _cursor = new LinkedList();
+    CCXMLNode _document = new CCXMLNode(null, "", CCXMLRule.getInstance().getRootTag());
     Locator _locator;
-
+    
     public CCDocumentHandler() {
-        try {
-            _builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        } catch (ParserConfigurationException ex) {
-            ex.printStackTrace();
-            return;
-        }
-        _document = _builder.newDocument();
     }
 
     @Override
@@ -75,45 +66,37 @@ public class CCDocumentHandler extends DefaultHandler {
 
             switch (operation) {
                 case NODE_ADOPTED:
-                    System.out.println("NODE_ADOPTED");
                     break;
                 case NODE_CLONED:
-                    System.out.println("NODE_CLONED");
                     break;
                 case NODE_DELETED:
-                    System.out.println("NODE_DELETED");
                     break;
                 case NODE_IMPORTED:
-                    System.out.println("NODE_IMPORTED");
                     break;
                 case NODE_RENAMED:
-                    System.out.println("NODE_RENAMED");
                     break;
             }
         }
     };
-
+    
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) {
-        _listForPathName.add(qName);
+        CCXMLNode parent = _cursor.isEmpty() ? _document: _cursor.getLast();
+        CCXMLNode child = new CCXMLNode(parent,  qName, null);
 
-        Element element = _document.createElement(qName);
+        parent._listChildTags.add(child);
+        _cursor.add(child);
+
         if (attributes.getLength() > 0) {
             for (int i = 0; i < attributes.getLength(); ++i) {
-                String aName = attributes.getQName(i);
-                String aValue = attributes.getValue(i);
-                element.setAttribute(aName, aValue);
+                String name = attributes.getQName(i);
+                String value = attributes.getValue(i);
+                child._listAttributes.addNameAndValue(name, value);
             }
         }
-        
-        if (_nestedPosition.size() == 0) {
-            _document.appendChild(element);
-        } else {
-            _nestedPosition.get(_nestedPosition.size() - 1).appendChild(element);
-        }
-        _nestedPosition.add(element);
-        element.setUserData(USERDATA_STARTLINE, (Integer)_locator.getLineNumber(), _dataHandler);
-        element.setUserData(USERDATA_STARTCOLUMN, (Integer)_locator.getColumnNumber(), _dataHandler);
+
+        child._lineNumber = _locator.getLineNumber();
+        child._columnNumber = _locator.getColumnNumber();
     }
 
     @Override
@@ -123,21 +106,25 @@ public class CCDocumentHandler extends DefaultHandler {
 
         String ret = CCXMLFile.shrinkSpace(text.toString());
         if (ret.length() > 0) {
-            _nestedPosition.get(_nestedPosition.size() - 1).setTextContent(text.toString());
+            _cursor.getLast().setTextContent(text.toString());
         }
     }
 
     @Override
     public void endElement(String uri, String localName, String qName) {
-        if (_listForPathName.size() > 0) {
-            if (_listForPathName.get(_listForPathName.size() - 1).equals(qName)) {
-                _listForPathName.remove(_listForPathName.size() - 1);
-                _nestedPosition.remove(_nestedPosition.size() - 1);
+        if (_cursor.isEmpty() == false) {
+            CCXMLNode lastLeaf = _cursor.getLast();
+            if (lastLeaf._name.equals(qName)) {
+                _cursor.removeLast();
+                
+                if (_cursor.isEmpty() == false) {
+                    lastLeaf = _cursor.getLast();
+                }
             } else {
-                System.err.println("XML ERROR " + qName);
+                System.out.println("XML ERROR " + qName + " is not " + lastLeaf._name);
             }
         } else {
-            System.err.println("XML ERROR " + qName);
+            System.out.println("XML ERROR " + qName + " is not null");
         }
     }
 

@@ -74,7 +74,7 @@ public class CCXMLTagRule {
         return null;
     }
 
-    public CCXMLTagRule getTag(String name) {
+    public CCXMLTagRule findChildRule(String name) {
         for (CCXMLTagRule type : _listChildTags) {
             if (type._name.equalsIgnoreCase(name)) {
                 return type;

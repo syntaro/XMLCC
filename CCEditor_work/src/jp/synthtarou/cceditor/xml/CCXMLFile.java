@@ -21,18 +21,19 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import jp.synthtarou.cceditor.common.CCWrapData;
 import jp.synthtarou.cceditor.common.CCWrapDataList;
+import jp.synthtarou.cceditor.xml.definition.CCXMLAttributeRule;
 import jp.synthtarou.cceditor.xml.definition.CCXMLTagRule;
 import jp.synthtarou.cceditor.xml.definition.CCXMLRule;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -68,8 +69,8 @@ public class CCXMLFile {
         CCWrapDataList<CCXMLNode> list = new CCWrapDataList<>();
 
         for (CCXMLNode tag : _arrayModuleData) {
-            String nameAttr = tag.getAttributeValue("name");
-            String idAttr = tag.getAttributeValue("id");
+            String nameAttr = tag._listAttributes.valueOfName("name");
+            String idAttr = tag._listAttributes.valueOfName("id");
 
             String dispName = tag._name;
 
@@ -95,13 +96,16 @@ public class CCXMLFile {
             }
             String name = file.getName();
             name = name.toLowerCase();
+            if (!name.contains("8850")) {
+                continue;
+            }
             if (name.endsWith(".xml")) {
                 if (file.canRead()) {
                     System.out.println("XMLFile [" + name + "]");
 
                     CCXMLFile f2 = new CCXMLFile(file);
                     f2.dumpWarning();
-                    //f2.dumpXML();
+                    f2.dumpXML();
                 }
             }
         }
@@ -110,38 +114,28 @@ public class CCXMLFile {
     public CCXMLFile(File file) {
         _file = file;
 
-        Document document;
         Element docElement;
-        NodeList list;
 
         try {
             SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
             SAXParser saxParser = saxParserFactory.newSAXParser();
             InputStream stream = new FileInputStream(file);
+            CCDocumentHandler handler = new CCDocumentHandler();
 
             try {
                 InputSource source = new InputSource(stream);
-
-                CCDocumentHandler test = new CCDocumentHandler();
-                saxParser.parse(source, test);
-                document = test._document;
+                saxParser.parse(source, handler);
             } finally {
                 stream.close();
             }
-            docElement = document.getDocumentElement();
-            list = document.getElementsByTagName("ModuleData");
 
             _arrayModuleData.clear();
 
-            for (int i = 0; i < list.getLength(); ++i) {
-                Node moduleNode = list.item(i);
-                if (moduleNode.getNodeType() == Node.ELEMENT_NODE) {
-                    CCXMLRule rule = CCXMLRule.getInstance();
-                    CCXMLNode target = new CCXMLNode(null, moduleNode.getNodeName(), rule.getModuleDataTag());
-                    tryRead(target, (Element) moduleNode);
+            for (CCXMLNode moduleNode : handler._document._listChildTags) {
+                CCXMLRule rule = CCXMLRule.getInstance();
 
-                    _arrayModuleData.add(target);
-                }
+                fillRules(moduleNode, rule.getModuleDataTag());
+                _arrayModuleData.add(moduleNode);
             }
         } catch (ParserConfigurationException ex) {
             _loadError = ex;
@@ -156,85 +150,55 @@ public class CCXMLFile {
         _loadError = null;
     }
 
-    public void tryRead(CCXMLNode target, Element e) {
-        StringBuffer indent = new StringBuffer();
-
-        NamedNodeMap attr = e.getAttributes();
-
+    public void fillRules(CCXMLNode target, CCXMLTagRule targetRule) {
         target._warningText = null;
-        target._lineNumber = (Integer) e.getUserData(CCDocumentHandler.USERDATA_STARTLINE);
-        target._columnNumber = (Integer) e.getUserData(CCDocumentHandler.USERDATA_STARTCOLUMN);
-
-        for (int x = 0; x < attr.getLength(); ++x) {
-            String name = attr.item(x).getNodeName();
-            String value = attr.item(x).getNodeValue();
-
-            if (target._definition == null) {
-                target._warningText = "Undocumented Tag has Attributes: " + name + "=" + value + " @" + getPathOfNode(e);
-                _listWarning.add(target);
-                target._listAttributes.add(new CCXMLAttribute(name, value));
-            } else if (target._definition.getAttribute(name) != null) {
-                target._listAttributes.add(new CCXMLAttribute(name, value));
-            } else {
-                target._warningText = "Undocumented Attributes: " + name + "=" + value + " @" + getPathOfNode(e);
-                _listWarning.add(target);
-                target._listAttributes.add(new CCXMLAttribute(name, value));
-            }
+        
+        if (targetRule == null) {
+            target._warningText = " this is undocumented ";
+            _listWarning.add(target);
+            return;
         }
-
-        NodeList list = e.getChildNodes();
-        ArrayList<Element> listElements = new ArrayList();
-
-        for (int x = 0; x < list.getLength(); ++x) {
-            Node node = list.item(x);
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                listElements.add((Element) node);
-            } else if (node.getNodeType() == Node.TEXT_NODE) {
-                String text = shrinkSpace(node.getTextContent());
-                if (text.length() > 0) {
-                    if (node.getNodeType() == Node.TEXT_NODE) {
-                        target._textContext = text;
-                        if (target._definition == null) {
-                            target._warningText = "Undocumented Tag has Text: " + text + " @" + getPathOfNode(e);
-                            _listWarning.add(target);
-                        }
-                        else if (target._definition.hasTextContents()) {
-                        }
-                        else {
-                        }
-                    }
+ 
+        StringBuffer warning = new StringBuffer();
+        ArrayList<String> missingAttr = new ArrayList<>();
+        ArrayList<String> undocumentedAttr = new ArrayList<>();
+        
+        for (CCXMLAttributeRule ruleAttr : targetRule.listAttributes()) {
+            if (ruleAttr.isMust()) {
+                if (target._listAttributes.indexOfName(ruleAttr.getName()) < 0) {
+                    missingAttr.add(ruleAttr.getName());
                 }
             }
         }
-
-        for (Element child : listElements) {
-            String name = child.getNodeName();
-
-            if (target._definition == null) {
-                target._warningText = "Undocumented Tag has SubTag : " + name + " @" + getPathOfNode(e);
-                _listWarning.add(target);
-
-                CCXMLNode childTag = new CCXMLNode(target, null, null);
-                target._listChildTags.add(childTag);
-
-                tryRead(childTag, child);
-            } else {
-                CCXMLTagRule childDefinition = target._definition.getTag(name);
-                if (childDefinition != null) {
-                    CCXMLNode childTag = new CCXMLNode(target, childDefinition.getName(), childDefinition);
-                    target._listChildTags.add(childTag);
-
-                    tryRead(childTag, child);
-                } else {
-                    target._warningText = "Undocumented Tag: " + name + " @" + getPathOfNode(e);
-                    _listWarning.add(target);
-
-                    CCXMLNode childTag = new CCXMLNode(target, null, null);
-                    target._listChildTags.add(childTag);
-
-                    tryRead(childTag, child);
-                }
+        if (missingAttr.size() > 0) {
+            warning.append(" missing attributes [" + missingAttr +"]");
+        }
+        for (CCWrapData<String> keyValue :  target._listAttributes) {
+            if (targetRule.getAttribute(keyValue.name) == null) {
+                undocumentedAttr.add(keyValue.name + "=" + keyValue.value);
             }
+        }
+
+        if (undocumentedAttr.size() > 0) {
+            warning.append(" undocumented attributes [" + undocumentedAttr +"]");
+        }
+
+        ArrayList<String> undocumentedTag = new ArrayList<>();
+        
+        for (CCXMLNode child : target._listChildTags) {
+            CCXMLTagRule childRule = targetRule.findChildRule(child._name);
+            if (childRule == null) {
+                undocumentedTag.add(child._name);
+            }
+            fillRules(child, childRule);
+        }
+
+        if (undocumentedTag.size() > 0) {
+            warning.append(" undocumented tags [" + undocumentedTag +"]");
+        }
+        if (warning.length() > 0) {
+            target._warningText = warning.toString();
+            _listWarning.add(target);
         }
     }
 
@@ -256,17 +220,17 @@ public class CCXMLFile {
         }
 
         StringBuffer strAttributes = new StringBuffer();
-        for (CCXMLAttribute attr : module._listAttributes) {
+        for (CCWrapData<String> attr : module._listAttributes) {
             strAttributes.append("[");
-            strAttributes.append(attr.getName());
+            strAttributes.append(attr.name);
             strAttributes.append("=");
-            strAttributes.append(attr.getValue());
+            strAttributes.append(attr.value);
             strAttributes.append("]");
         }
 
         System.out.println(strIndent.toString() + "\"" + module._name + "\"" + strAttributes.toString());
 
-        if (module._definition.hasTextContents()) {
+        if (module._rule != null && module._rule.hasTextContents()) {
             System.out.println(strIndent.toString() + "=" + module._textContext);
         }
 
@@ -295,7 +259,7 @@ public class CCXMLFile {
             if (start == 0 && end == original.length() /* && original.indexOf('\n') < 0 */) {
                 return original;
             }
-            
+
             if (start == end) {
                 return "";
             }
@@ -305,7 +269,7 @@ public class CCXMLFile {
         }
 
         return original;
-/*
+        /*
         StringBuffer buf = new StringBuffer();
         for (int i = start; i < end; ++i) {
             char c = original.charAt(i);
@@ -334,6 +298,10 @@ public class CCXMLFile {
         return path.toString();
     }
 
+    public List<CCXMLNode> listWarning() {
+        return Collections.unmodifiableList(_listWarning);
+    }
+    
     public String getAdviceForXML() {
         if (_loadError != null) {
             if (_loadError instanceof SAXParseException) {
@@ -350,7 +318,7 @@ public class CCXMLFile {
             if (str.length() > 0) {
                 str.append("\n");
             }
-            str.append("Warning [" + node._lineNumber + ", " + node._columnNumber + "] -> " + node._warningText);
+            str.append("" + node._lineNumber + ", " + node._columnNumber + ": " + node._warningText);
         }
         return str.toString();
     }

@@ -32,6 +32,10 @@ public class CCXMLRule {
         return _instance;
     }
 
+    public CCXMLTagRule getRootTag() { 
+        return root;
+    }
+    
     public CCXMLTagRule getModuleDataTag() { 
         return moduleData;
     }
@@ -55,6 +59,8 @@ public class CCXMLRule {
     public CCXMLTagRule getDefaultDataTag() { 
         return defaultData;
     }
+
+    final CCXMLTagRule root;
 
     final CCXMLTagRule moduleData;
     final CCXMLTagRule moduleData_controlCangeDefault;
@@ -111,7 +117,10 @@ public class CCXMLRule {
     final boolean _enableUndocumented = false;
 
     protected CCXMLRule() {
+        root = new CCXMLTagRule(null);
+
         moduleData = new CCXMLTagRule("ModuleData");
+        root.addChild(moduleData);
 
         /* ModuleData */
         moduleData.readyForAttributeMust("Name", CCValueRule.valueRuleText); 

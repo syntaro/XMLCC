@@ -21,8 +21,17 @@ Click nbfs://nbhost/SystemFileSystem/Templates/XML/XMLDocument.xml to edit this 
         <problem date="2023-06-02">
             XML読み込み時、行番号に対応する
         </problem>
-        <feedback date="2023-06-02">
-            実装はできた、次は、これをGUIにバインドすること
+        <feedback date="2023-06-03">
+            対応した
+        </feedback>
+    </task>
+    <task number="11">
+        <category>XMLの行番号</category>
+        <problem date="2023-06-03">
+            XMLワーニングリストを選択したら、XMLナビの選択へジャンプ
+        </problem>
+        <feedback date="2023-06-03">
+            対応すみ
         </feedback>
     </task>
 </root>

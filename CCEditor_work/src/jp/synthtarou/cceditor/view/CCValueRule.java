@@ -167,11 +167,11 @@ public class CCValueRule {
         }
     }
 
-    public CCValueRule createListNodeAttributeNames(CCXMLNode node) {
+    public CCValueRule valueRuleForAttributeNames(CCXMLNode node) {
         _listMenuItem = new ArrayList<>();
         _type = TYPE_MENU;
 
-        CCXMLTagRule def = node.getDefinition();
+        CCXMLTagRule def = node.getTagRule();
         List<CCXMLAttributeRule> listDefAttr = def.listAttributes();
 
         HashSet<String> already = new HashSet();
@@ -181,16 +181,16 @@ public class CCValueRule {
                 continue;
             }
             already.add(text);
-            _listMenuItem.add(node.getAttributeName(i));
+            _listMenuItem.add(text);
         }
         return this;
     }
 
-    public CCValueRule createlistNodeTagNames(CCXMLNode node) {
+    public CCValueRule valueRuleForTagNames(CCXMLNode node) {
         _listMenuItem = new ArrayList<>();
         _type = TYPE_MENU;
 
-        CCXMLTagRule def = node.getDefinition();
+        CCXMLTagRule def = node.getTagRule();
         List<CCXMLTagRule> listDefTag = def.listChildTags();
 
         HashSet<String> already = new HashSet();
@@ -205,9 +205,9 @@ public class CCValueRule {
         return this;
     }
 
-    public CCValueRule createlistNodeAttributeValues(CCXMLNode node, String attributeName) {
-        int x = node.indexOfAttribute(attributeName);
-        CCXMLTagRule def = node.getDefinition();
+    public CCValueRule valueRuleForAttributeValues(CCXMLNode node, String attributeName) {
+        int x = node._listAttributes.indexOfName(attributeName);
+        CCXMLTagRule def = node.getTagRule();
         CCXMLAttributeRule defAttr = def.getAttribute(attributeName);
         CCValueRule rule = defAttr.getValueRule();
 
@@ -226,7 +226,7 @@ public class CCValueRule {
         return this;
     }
 
-    public CCValueRule createListNumber(int from, int to, int step) {
+    public CCValueRule valueRuleForNumber(int from, int to, int step) {
         _listMenuItem = null;
 
         _type = TYPE_NUMBER;

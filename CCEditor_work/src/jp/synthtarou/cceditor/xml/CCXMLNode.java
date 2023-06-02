@@ -18,6 +18,7 @@
 package jp.synthtarou.cceditor.xml;
 
 import java.util.ArrayList;
+import javax.swing.text.html.CSS;
 import jp.synthtarou.cceditor.common.CCWrapDataList;
 import jp.synthtarou.cceditor.xml.definition.CCXMLTagRule;
 import jp.synthtarou.cceditor.xml.definition.CCXMLRule;
@@ -27,13 +28,15 @@ import jp.synthtarou.cceditor.xml.definition.CCXMLRule;
  * @author Syntarou YOSHIDA
  */
 public class CCXMLNode  {
-    public CCXMLNode(CCXMLNode parent, String name, CCXMLTagRule definition) {
+    public CCXMLNode(CCXMLNode parent, String name, CCXMLTagRule rule) {
         _name = name;
-        _definition = definition;
+        _rule = rule;
         _parent = parent;
+        _listAttributes = new CCWrapDataList<>();
+        _listAttributes.setIgnoreCase(true);
     }
     
-    final CCXMLTagRule _definition;
+    final CCXMLTagRule _rule;
     final String _name;
     final CCXMLNode _parent;
 
@@ -42,9 +45,21 @@ public class CCXMLNode  {
     int _lineNumber;
     int _columnNumber;
 
-    ArrayList<CCXMLAttribute> _listAttributes = new ArrayList<>();
+    public final CCWrapDataList<String> _listAttributes;
     ArrayList<CCXMLNode> _listChildTags = new ArrayList<>();
+    
+    public String getWarningText() {
+        return _warningText;
+    }
+    
+    public int getLineNumber() {
+        return _lineNumber;
+    }
 
+    public int getColumnNumber() {
+        return _columnNumber;
+    }
+    
     public String getName() {
         return _name;
     }
@@ -57,42 +72,8 @@ public class CCXMLNode  {
         _textContext = text;
     }
     
-    public CCXMLTagRule getDefinition() {
-        return _definition;
-    }
-    
-    public int countAttribute() {
-        return _listAttributes.size();
-    }
-    
-    public CCXMLAttribute getAttribute(int index) {
-        return _listAttributes.get(index);
-    }
-
-    public String getAttributeName(int index) {
-        return _listAttributes.get(index).getName();
-    }
-
-    public String getAttributeText(int index) {
-        return _listAttributes.get(index).getValue();
-    }
-    
-    public int indexOfAttribute(String name) {
-        for (int i = 0; i < _listAttributes.size(); ++ i) {
-            CCXMLAttribute attr = _listAttributes.get(i);
-            if (attr.getName().equalsIgnoreCase(name)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    public String getAttributeValue(String name) {
-        int x = indexOfAttribute(name);
-        if (x < 0) {
-            return null;
-        }
-        return getAttributeText(x);
+    public CCXMLTagRule getTagRule() {
+        return _rule;
     }
     
     public CCXMLNode getParent() {
@@ -103,6 +84,10 @@ public class CCXMLNode  {
         ArrayList<CCXMLNode> list = new ArrayList<>();
         CCXMLNode node = this;
         while(node != null) {
+            if (node.getParent() == null) {
+                //root
+                break;
+            }
             list.add(0, node);
             node = node.getParent();
         }
@@ -135,8 +120,8 @@ public class CCXMLNode  {
 
         for (CCXMLNode tag : _listChildTags) {
             if (tag._name.equalsIgnoreCase(name)) {
-                String nameAttr = tag.getAttributeValue("name");
-                String idAttr = tag.getAttributeValue("id");
+                String nameAttr = tag._listAttributes.valueOfName("name");
+                String idAttr = tag._listAttributes.valueOfName("id");
                 
                 String dispName = tag._name;
                
@@ -178,4 +163,19 @@ public class CCXMLNode  {
         return getChildren(def.getDefaultDataTag().getName());
     }
 
+    public String toString() {
+        String tag = _name;
+
+        String name = _listAttributes.valueOfName("name");
+        if (name != null) {
+            return tag + "(name="  + name + ")";
+        }
+
+        String id = _listAttributes.valueOfName("id");
+        if (id != null) {
+            return tag + "(id="  + id + ")";
+        }
+        
+        return tag;
+    }
 }

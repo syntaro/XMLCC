@@ -22,6 +22,7 @@ import java.util.HashSet;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
+import jp.synthtarou.cceditor.common.CCWrapData;
 import jp.synthtarou.cceditor.xml.definition.CCXMLAttributeRule;
 
 /**
@@ -85,32 +86,28 @@ public class CCXMLTreeRenderer implements TreeCellRenderer {
             ArrayList<String> listAttrDefined = new ArrayList();
             ArrayList<String> listAttrNonedefined = new ArrayList();
 
-            if (node._definition != null) {
+            if (node._rule != null) {
                 HashSet<String> already = new HashSet();
 
-                for (CCXMLAttributeRule dump :  node._definition.listAttributes()) {
+                for (CCXMLAttributeRule dump :  node._rule.listAttributes()) {
                     String name = dump.getName();
-                    String value = node.getAttributeValue(name);
+                    String value = node._listAttributes.valueOfName(name);
                     if (value != null) {
                         listAttrDefined.add(name + "=" + escapeDQuote(value));
                     }
                     already.add(name.toLowerCase());
                 }
 
-                for (CCXMLAttribute attr : node._listAttributes) {
-                    String name = attr.getName();
-                    String value = attr.getValue();
-                    if (already.contains(name.toLowerCase())) {
+                for (CCWrapData<String> attr : node._listAttributes) {
+                    if (already.contains(attr.name.toLowerCase())) {
                         continue;
                     }
-                    listAttrNonedefined.add(name + "="  + escapeDQuote(value));
+                    listAttrNonedefined.add(attr.name + "="  + escapeDQuote(attr.value));
                 }
             }
             else {
-                for (CCXMLAttribute attr : node._listAttributes) {
-                    String name = attr.getName();
-                    String value = attr.getValue();
-                    listAttrNonedefined.add(name + "="  + value);
+                for (CCWrapData<String> attr : node._listAttributes) {
+                    listAttrNonedefined.add(attr.name + "="  + attr.value);
                 }
             }
             

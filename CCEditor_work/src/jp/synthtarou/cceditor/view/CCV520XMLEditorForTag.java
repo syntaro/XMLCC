@@ -17,6 +17,7 @@
 package jp.synthtarou.cceditor.view;
 
 import javax.swing.table.DefaultTableModel;
+import jp.synthtarou.cceditor.common.CCWrapData;
 import jp.synthtarou.cceditor.view.common.CCPromptUtil;
 import jp.synthtarou.cceditor.view.common.CCTextPrompt;
 import jp.synthtarou.cceditor.view.common.IPromptForInput;
@@ -51,8 +52,8 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
         };
         model.addColumn("Name");
         model.addColumn("Value");
-        for (int i = 0; i < node.countAttribute(); ++i) {
-            model.addRow(new Object[]{node.getAttributeName(i), node.getAttributeText(i)});
+        for (CCWrapData<String> attr : node._listAttributes) {
+            model.addRow(new Object[]{attr.name, attr.value});
         }
         jTable1.setModel(model);
     }

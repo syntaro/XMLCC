@@ -19,6 +19,7 @@ package jp.synthtarou.cceditor.view;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JPanel;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -26,6 +27,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import jp.synthtarou.cceditor.common.CCGlobalTimer;
+import jp.synthtarou.cceditor.common.CCWrapDataList;
 import jp.synthtarou.cceditor.view.common.ClipboardMenuItems;
 import jp.synthtarou.cceditor.view.common.IPromptForInput;
 import jp.synthtarou.cceditor.view.common.MyComboBoxRenderer1;
@@ -84,10 +86,10 @@ public class CCV510XMLTagTree extends javax.swing.JPanel implements IPromptForIn
         clip.insertBeforeThis(_checkTextContent);
         clip.insertBeforeThis(null);
         
-        new ClipboardMenuItems(jTextAreaErrorView);
+        jListWarning.setModel(createWarningListModel());
         new ClipboardMenuItems(jTextFieldXMLPath);
 
-        updateUI();;
+        updateUI();
     }
 
     /**
@@ -110,8 +112,8 @@ public class CCV510XMLTagTree extends javax.swing.JPanel implements IPromptForIn
         jLabel4 = new javax.swing.JLabel();
         jTextFieldXMLPath = new javax.swing.JTextField();
         jPanel5 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jTextAreaErrorView = new javax.swing.JTextArea();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        jListWarning = new javax.swing.JList<>();
 
         setLayout(new javax.swing.OverlayLayout(this));
 
@@ -176,12 +178,14 @@ public class CCV510XMLTagTree extends javax.swing.JPanel implements IPromptForIn
         jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("Error View"));
         jPanel5.setLayout(new javax.swing.BoxLayout(jPanel5, javax.swing.BoxLayout.LINE_AXIS));
 
-        jTextAreaErrorView.setEditable(false);
-        jTextAreaErrorView.setColumns(20);
-        jTextAreaErrorView.setRows(5);
-        jScrollPane2.setViewportView(jTextAreaErrorView);
+        jListWarning.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                jListWarningValueChanged(evt);
+            }
+        });
+        jScrollPane3.setViewportView(jListWarning);
 
-        jPanel5.add(jScrollPane2);
+        jPanel5.add(jScrollPane3);
 
         jSplitPane1.setBottomComponent(jPanel5);
 
@@ -246,6 +250,27 @@ public class CCV510XMLTagTree extends javax.swing.JPanel implements IPromptForIn
 
     }//GEN-LAST:event_jComboBoxModuleActionPerformed
 
+    private void jListWarningValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jListWarningValueChanged
+        int index = jListWarning.getSelectedIndex();
+        if (index >= 0) {
+           CCXMLNode node =  _warningListModel.valueOfIndex(index);
+           selectNodeOnTree(node);
+        }
+    }//GEN-LAST:event_jListWarningValueChanged
+
+    void selectNodeOnTree(CCXMLNode node) {
+        List<CCXMLNode> path = node.getAsPath();
+        
+        for (int i = 0; i< path.size(); ++ i) {
+            List<CCXMLNode> sub = path.subList(0, i);
+            if (sub.size() > 0) {
+                jTreeDDFile.expandPath(new TreePath(sub.toArray()));
+            }
+        }
+        jTreeDDFile.setSelectionPath(new TreePath(path.toArray()));
+        jTreeDDFile.scrollPathToVisible(new TreePath(path.toArray()));
+    }
+
     public void updateTreeSelected() {
         TreePath selected = jTreeDDFile.getSelectionPath();
         if (selected != null) {
@@ -265,17 +290,30 @@ public class CCV510XMLTagTree extends javax.swing.JPanel implements IPromptForIn
         return model;
     }
 
+    CCWrapDataList<CCXMLNode> _warningListModel;
+
+    public CCWrapDataList<CCXMLNode> createWarningListModel() {
+        CCWrapDataList<CCXMLNode> ret = new CCWrapDataList<>();
+        for (CCXMLNode warn :  _file.listWarning()) {
+            int line = warn.getLineNumber();
+            int col = warn.getColumnNumber();
+            ret.addNameAndValue("" + line + ", " + col + ": " + warn.getWarningText(), warn);
+        }
+        _warningListModel = ret;
+        return ret;
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<String> jComboBoxModule;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JList<String> jListWarning;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JTextArea jTextAreaErrorView;
     private javax.swing.JTextField jTextFieldXMLPath;
     private javax.swing.JTree jTreeDDFile;
     // End of variables declaration//GEN-END:variables
