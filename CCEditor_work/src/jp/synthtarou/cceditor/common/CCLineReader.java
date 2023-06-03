@@ -71,7 +71,7 @@ public class CCLineReader {
                 line = newLine;
             }
         }while(true);
-        
+
         if (x == 0 && _pos >= _bufferSize) {
             return null;
         }

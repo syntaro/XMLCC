@@ -16,18 +16,9 @@
  */
 package jp.synthtarou.cceditor.xml;
 
-import java.io.File;
 import java.util.LinkedList;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import static jp.synthtarou.cceditor.xml.CCXMLFile.getPathOfNode;
+import jp.synthtarou.cceditor.common.CCUtilities;
 import jp.synthtarou.cceditor.xml.definition.CCXMLRule;
-import jp.synthtarou.cceditor.xml.definition.CCXMLTagRule;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.UserDataHandler;
 import org.xml.sax.Attributes;
@@ -101,12 +92,21 @@ public class CCDocumentHandler extends DefaultHandler {
 
     @Override
     public void characters(char[] ch, int offset, int length) {
-        StringBuffer text = new StringBuffer();
-        text.append(ch, offset, length);
+        StringBuffer ret = new StringBuffer();
+        ret.append(ch, offset, length);
+        
+        if (_cursor == null || _cursor.getLast() == null) {
+            return;
+        }
 
-        String ret = CCXMLFile.shrinkSpace(text.toString());
         if (ret.length() > 0) {
-            _cursor.getLast().setTextContent(text.toString());
+            String prev = _cursor.getLast().getTextContent();
+            if (prev != null) {
+                _cursor.getLast().setTextContent(prev + ret);
+            }
+            else {
+                _cursor.getLast().setTextContent(ret.toString());
+            }
         }
     }
 
@@ -120,41 +120,11 @@ public class CCDocumentHandler extends DefaultHandler {
                 if (_cursor.isEmpty() == false) {
                     lastLeaf = _cursor.getLast();
                 }
-            } else {
-                System.out.println("XML ERROR " + qName + " is not " + lastLeaf._name);
             }
-        } else {
-            System.out.println("XML ERROR " + qName + " is not null");
         }
     }
 
     @Override
     public void endDocument() {
-    }
-
-    public static boolean writeDocument(File file, Document doc) {
-        Transformer tf = null;
-
-        try {
-            TransformerFactory factory = TransformerFactory
-                    .newInstance();
-            tf = factory.newTransformer();
-        } catch (TransformerConfigurationException e) {
-            e.printStackTrace();
-            return false;
-        }
-
-        tf.setOutputProperty("indent", "yes");
-        tf.setOutputProperty("encoding", "UTF-8");
-
-        try {
-            tf.transform(new DOMSource(doc), new StreamResult(
-                    file));
-        } catch (TransformerException e) {
-            e.printStackTrace();
-            return false;
-        }
-
-        return true;
     }
 }

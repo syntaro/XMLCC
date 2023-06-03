@@ -228,6 +228,9 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jTextAreaTextContentMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTextAreaTextContentMousePressed
+        if (_node == null) {
+            return;
+        }
         CCTextPrompt text = new CCTextPrompt(_node.getTextContent(), "Text Of Tag");
         CCPromptUtil.showPrompt(this, text);
         String editedText = text.getPromptResult();

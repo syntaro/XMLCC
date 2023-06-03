@@ -89,7 +89,7 @@ public class CCXMLManagerPanel extends javax.swing.JPanel implements IPrompt {
         jScrollPane1 = new javax.swing.JScrollPane();
         jListXMLFiles = new javax.swing.JList<>();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        jTextAreaWarning = new javax.swing.JTextArea();
         jButtonEditXML = new javax.swing.JButton();
 
         setBorder(javax.swing.BorderFactory.createTitledBorder("Managed XML Files"));
@@ -133,9 +133,9 @@ public class CCXMLManagerPanel extends javax.swing.JPanel implements IPrompt {
 
         jSplitPane1.setLeftComponent(jScrollPane1);
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane2.setViewportView(jTextArea1);
+        jTextAreaWarning.setColumns(20);
+        jTextAreaWarning.setRows(5);
+        jScrollPane2.setViewportView(jTextAreaWarning);
 
         jSplitPane1.setRightComponent(jScrollPane2);
 
@@ -167,8 +167,8 @@ public class CCXMLManagerPanel extends javax.swing.JPanel implements IPrompt {
         if (sel >= 0) {
             CCXMLFile file = _listModel.valueOfIndex(sel);
             String text = file.getAdviceForXML();
-            jTextArea1.setText(text);
-            jTextArea1.setCaretPosition(0);
+            jTextAreaWarning.setText(text);
+            jTextAreaWarning.setCaretPosition(0);
         }
         updateEnables();
     }//GEN-LAST:event_jListXMLFilesValueChanged
@@ -206,7 +206,7 @@ public class CCXMLManagerPanel extends javax.swing.JPanel implements IPrompt {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextArea jTextAreaWarning;
     // End of variables declaration//GEN-END:variables
 
     @Override

@@ -21,19 +21,25 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -321,12 +327,12 @@ public class CCUtilities {
             start++;
         }
         while (start <= end && isShrinkTarget(text.charAt(end))) {
-            end++;
+            end--;
         }
         if (start > end) {
             return "";
         }
-        return text.substring(start, end);
+        return text.substring(start, end + 1);
     }
 
     public static String getStackTraceAsString(Throwable th) {
@@ -361,5 +367,240 @@ public class CCUtilities {
             base = base.getParentFile();
         }
         return base;
+    }
+
+    public static boolean isInteger(String text) {
+        for (int x = 0; x < text.length(); ++x) {
+            char ch = text.charAt(x);
+            if (ch >= '0' && ch <= '9') {
+                continue;
+            }
+            return false;
+        }
+        if (text.length() == 0) {
+            return false;
+        }
+        return true;
+    }
+
+    public static File getSettingDirectory() {
+        File dir = new File(CCUtilities.getAppBaseDirectory(), "settings");
+        if (dir.isDirectory()) {
+            return dir;
+        }
+
+        try {
+            Path p = Paths.get(dir.toURI());
+            Files.createDirectory(p);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (dir.isDirectory()) {
+            return dir;
+        }
+
+        return null;
+    }
+
+    public static File createTemporaryFile(File target) {
+        File dir = target.getParentFile();
+        String fileName = target.getName();
+        for (int i = 1; i < 100; ++i) {
+            String newName = fileName + "_temporary" + String.valueOf(i);
+            File newFile = new File(dir, newName);
+            if (newFile.exists()) {
+                continue;
+            }
+            try {
+                new FileOutputStream(newFile).close();
+            } catch (IOException e) {
+                continue;
+            }
+            return newFile;
+        }
+        return null;
+    }
+
+    public static File safeRenameToBackup(File target) {
+        File parent = target.getParentFile();
+        
+        parent = new File(parent, "Old");
+        parent.mkdir();
+
+        String fileName = target.getName();
+
+        int lastDot = fileName.indexOf('.');
+        String forward, fileExt;
+
+        if (lastDot >= 0) {
+            forward = fileName.substring(0, lastDot);
+            fileExt = fileName.substring(lastDot);
+        } else {
+            forward = fileName;
+            fileExt = "";
+        }
+
+        Date lastMod = new Date(target.lastModified());
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(lastMod);
+
+        int year = cal.get(Calendar.YEAR);
+        int month = cal.get(Calendar.MONTH);
+        int day = cal.get(Calendar.DAY_OF_MONTH);
+        int hour = cal.get(Calendar.HOUR_OF_DAY);
+        int min = cal.get(Calendar.MINUTE);
+
+        String newName1 = forward + "_back" + year + "-" + month + "-" + day;
+        String newName3 = fileExt;
+
+        for (int count = 1; count <= 99; ++count) {
+            String newName;
+            if (count == 0) {
+                newName = newName1 + newName3;
+            } else {
+                String newName2 = "(" + count + ")";
+                newName = newName1 + newName2 + newName3;
+            }
+
+            File f = new File(parent, newName);
+            if (f.isFile()) {
+                continue;
+            }
+            target.renameTo(f);
+            return f;
+        }
+        return null;
+    }
+
+    public static int compareFileText(File f1, File f2) {
+        CCLineReader r1 = null, r2 = null;
+        InputStream i1 = null, i2 = null;
+
+        try {
+            if (!f1.exists() || !f2.exists()) {
+                return -1;
+            }
+            i1 = new FileInputStream(f1);
+            i2 = new FileInputStream(f2);
+
+            r1 = new CCLineReader(i1, "utf-8");
+            r2 = new CCLineReader(i2, "utf-8");
+
+            while (true) {
+                String line1 = "", line2 = "";
+
+                while (line1 != null && line1.isEmpty()) {
+                    line1 = r1.readLine();
+                    line1 = shrinkText(line1);
+                }
+
+                while (line2 != null && line2.isEmpty()) {
+                    line2 = r2.readLine();
+                    line2 = shrinkText(line2);
+                }
+
+                if (line1 == null) {
+                    if (line2 == null) {
+                        return 0;
+                    } else {
+                        return -1;
+                    }
+                }
+                if (line2 == null) {
+                    return 1;
+                }
+
+                int x = line1.compareTo(line2);
+                if (x != 0) {
+                    return x;
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(CCUtilities.class.getName()).log(Level.SEVERE, null, ex);
+            return -1;
+        } finally {
+            if (i1 != null) {
+                try {
+                    i1.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(CCUtilities.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            if (i2 != null) {
+                try {
+                    i2.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(CCUtilities.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }
+
+    public static int compareFileBinary(File f1, File f2) throws IOException {
+        long l1 = f1.length();
+        long l2 = f2.length();
+        if (l1 < l2) {
+            return -1;
+        }
+        if (l1 > l2) {
+            return -1;
+        }
+
+        byte[] data1 = new byte[4096];
+        byte[] data2 = new byte[4096];
+        FileInputStream in1 = null;
+        FileInputStream in2 = null;
+
+        try {
+            in1 = new FileInputStream(f1);
+            in2 = new FileInputStream(f2);
+
+            while (true) {
+                int len1 = in1.read(data1);
+                int len2 = in1.read(data2);
+                if (len1 < len2) {
+                    return -1;
+                }
+                if (len1 > len2) {
+                    return 1;
+                }
+                if (len1 <= 0) {
+                    break;
+                }
+                for (int x = 0; x < len1; ++x) {
+                    if (data1[x] < data2[x]) {
+                        return -1;
+                    }
+                    if (data1[x] > data2[x]) {
+                        return 1;
+                    }
+                }
+            }
+            return 0;
+        } catch (IOException ex) {
+            throw ex;
+        } finally {
+            if (in1 != null) {
+                try {
+                    in1.close();
+
+                } catch (IOException ex) {
+                    Logger.getLogger(CCUtilities.class
+                            .getName()).log(Level.SEVERE, null, ex);
+                }
+                ;
+
+            }
+            if (in2 != null) {
+                try {
+                    in2.close();
+
+                } catch (IOException ex) {
+                    Logger.getLogger(CCUtilities.class
+                            .getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
     }
 }

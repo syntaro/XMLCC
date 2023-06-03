@@ -22,9 +22,12 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.WindowConstants;
 import jp.synthtarou.cceditor.Main;
 import static jp.synthtarou.cceditor.common.CCUtilities.centerWindow;
 import static jp.synthtarou.cceditor.common.CCUtilities.getOwnerWindow;
@@ -34,6 +37,7 @@ import static jp.synthtarou.cceditor.common.CCUtilities.getOwnerWindow;
  * @author Syntarou YOSHIDA
  */
 public class CCPromptUtil {
+
     static class MyModalWindow extends JDialog {
 
         public MyModalWindow(Window parent) {
@@ -44,7 +48,7 @@ public class CCPromptUtil {
             super(parent);
         }
     }
-    
+
     public static void showPanelForTest(Container parent, JPanel panel) {
         Container cont = getOwnerWindow(parent);
         String title = Main.TITLE;
@@ -57,7 +61,7 @@ public class CCPromptUtil {
             Dialog D = (Dialog) cont;
             modal = new MyModalWindow(D);
         } else if (cont instanceof Window) {
-            Window W = (Window)cont;
+            Window W = (Window) cont;
             modal = new MyModalWindow(W);
         } else {
             modal = new MyModalWindow(null);
@@ -67,7 +71,7 @@ public class CCPromptUtil {
         modal.pack();
         modal.setModal(true);
         if (panel instanceof IPrompt) {
-            IPrompt prompt = (IPrompt)panel;
+            IPrompt prompt = (IPrompt) panel;
             modal.setTitle(prompt.getPromptTitle());
             modal.setSize(prompt.getPromptSize());
         }
@@ -75,10 +79,10 @@ public class CCPromptUtil {
         panel.requestFocusInWindow();
         modal.setVisible(true);
     }
-    
+
     public static void closeAnyway(IPrompt prompt) {
         Component c = prompt.getAsPanel();
-        while(c != null) {
+        while (c != null) {
             c = c.getParent();
             if (c == null) {
                 break;
@@ -90,16 +94,9 @@ public class CCPromptUtil {
         }
     }
 
-    private static void closeWithValidate(IPromptForInput prompt) {
-        // implementation example
-        if (prompt.validatePromptResult()) {
-            closeAnyway(prompt);
-        }
-    }
-
     public static void showFrame(JPanel panel) {
         String title = Main.TITLE;
-        
+
         JFrame child = null;
         child = new JFrame(title);
         child.getContentPane().add(panel, "Center");
@@ -110,9 +107,33 @@ public class CCPromptUtil {
         child.setVisible(true);
     }
 
+    static class CloseFook extends WindowAdapter {
+
+        JDialog _owner;
+        IPromptForInput<Object> _input;
+
+        CloseFook(JDialog owner, IPromptForInput input) {
+            _owner = owner;
+            _input = input;
+        }
+
+        @Override
+        public void windowClosing(WindowEvent e) {
+            if (_input.validatePromptResult()) {
+                _owner.dispose();
+            }
+        }
+    }
+
     public static Object showPrompt(Container parent, IPrompt prompt) {
         Container cont = getOwnerWindow(parent);
         String title = prompt.getPromptTitle();
+
+        IPromptForInput _asInput = null;
+
+        if (prompt instanceof IPromptForInput) {
+            _asInput = (IPromptForInput) prompt;
+        }
 
         JDialog child = null;
         if (title == null) {
@@ -137,10 +158,15 @@ public class CCPromptUtil {
         }
         centerWindow(child);
         prompt.getAsPanel().requestFocusInWindow();
+
+        if (_asInput != null) {
+            child.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            child.addWindowListener(new CloseFook(child, _asInput));
+        }
         child.setVisible(true);
-        
-        if (prompt instanceof IPromptForInput) {
-            return ((IPromptForInput)prompt).getPromptResult();
+
+        if (_asInput != null) {
+            return _asInput.getPromptResult();
         }
         return null;
     }

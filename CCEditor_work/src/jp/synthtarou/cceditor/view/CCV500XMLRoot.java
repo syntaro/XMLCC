@@ -16,10 +16,13 @@
  */
 package jp.synthtarou.cceditor.view;
 
-import jp.synthtarou.cceditor.view.common.IPrompt;
 import java.awt.Dimension;
+import java.io.IOException;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.xml.transform.TransformerException;
+import jp.synthtarou.cceditor.view.common.IPromptForInput;
 import jp.synthtarou.cceditor.xml.CCXMLFile;
 import jp.synthtarou.cceditor.xml.CCXMLNode;
 
@@ -27,17 +30,20 @@ import jp.synthtarou.cceditor.xml.CCXMLNode;
  *
  * @author Syntarou YOSHIDA
  */
-public class CCV500XMLRoot extends javax.swing.JPanel implements IPrompt {
+public class CCV500XMLRoot extends javax.swing.JPanel implements IPromptForInput<CCXMLFile> {
     private final CCV510XMLTagTree _xmlBrowser;
     private final CCV520XMLEditorForTag _editorForTag;
     private final CCV530XMLEditorForCC _editorForCC;
     private final CCV540XMLEditorForInstruments _editorForInst;
+    public final CCXMLFile _file;
 
     /**
      * Creates new form Panel00MainEditor
      */
     public CCV500XMLRoot(CCXMLFile file) {
         initComponents();
+
+        _file = file;
 
         _xmlBrowser = new CCV510XMLTagTree(this, file);
         _editorForTag = new CCV520XMLEditorForTag(this);
@@ -91,5 +97,36 @@ public class CCV500XMLRoot extends javax.swing.JPanel implements IPrompt {
     @Override
     public Dimension getPromptSize() {
         return new Dimension(900, 500);
+    }
+
+    @Override
+    public boolean validatePromptResult() {
+        System.err.println("validatePromptResult");
+        try {
+            if (_file.writeToTeporary() == false) {
+                JOptionPane.showMessageDialog(this, "File Not Changed");
+                return true;
+            }
+            _file.moveTemporaryToThis();
+            JOptionPane.showMessageDialog(this, "Wrote: " + _file._file);
+            return true;
+        } catch (IOException ex) {
+            int opt = JOptionPane.showConfirmDialog(this, "Error when saving XML: " + ex.toString(), "Close without save?", JOptionPane.YES_NO_OPTION);
+            if (opt == JOptionPane.YES_OPTION) {
+                return true;
+            }
+            return false;
+        } catch (TransformerException ex) {
+            int opt = JOptionPane.showConfirmDialog(this, "Error when saving XML: " + ex.toString(), "Close without save?", JOptionPane.YES_NO_OPTION);
+            if (opt == JOptionPane.YES_OPTION) {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    @Override
+    public CCXMLFile getPromptResult() {
+        return _file;
     }
 }

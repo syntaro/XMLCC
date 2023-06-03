@@ -219,13 +219,6 @@ public class CCXMLManager implements CCSettingTarget {
         return false;
     }
 
-    public boolean copyFileWithBackup(File from, File to) {
-        if (to.exists()) {
-            backupFileToOld(to);
-        }
-        return copyFileNative(from, to);
-    }
-
     public boolean importXMLFile(JComponent parent, File file) {
         File saveDirectory = getSaveDirectory();
 

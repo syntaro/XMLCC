@@ -27,6 +27,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.TreeSet;
+import jp.synthtarou.cceditor.common.CCUtilities;
 
 /**
  *
@@ -83,7 +84,7 @@ public class CCSetting {
     }
 
     public CCSetting(String name, boolean addToEvery) {
-        this(new File(CCSettingUtil.getSettingDirectory(), name +".ini"), addToEvery);
+        this(new File(CCUtilities.getSettingDirectory(), name +".ini"), addToEvery);
     }
     
     public static void saveEverySettingToFile() {
@@ -190,7 +191,7 @@ public class CCSetting {
             _root.clearValues();
             _target.beforeWriteSettingFile(this);
         }
-        File temporary = CCSettingUtil.createTemporaryFile(_settingFile);
+        File temporary = CCUtilities.createTemporaryFile(_settingFile);
         CCLineWriter writer = null;
         System.out.println("writing " + _settingFile + " = " + _targetName);
         
@@ -201,11 +202,11 @@ public class CCSetting {
 
             writer.close();
 
-            File backup = CCSettingUtil.autobackupFile(_settingFile);
+            File backup = CCUtilities.safeRenameToBackup(_settingFile);
             temporary.renameTo(_settingFile);
             
             if (backup != null) {
-                if (CCSettingUtil.isSameFile(backup, _settingFile)) {
+                if (CCUtilities.compareFileText(backup, _settingFile) == 0) {
                     try {
                         backup.delete();
                     }catch(Exception e) {
@@ -324,10 +325,10 @@ public class CCSetting {
                 String str1 = p1.get(x);
                 String str2 = p2.get(x);
                 
-                if (CCSettingUtil.isInteger(str1)) {
+                if (CCUtilities.isInteger(str1)) {
                     str1 = "0";
                 }
-                if (CCSettingUtil.isInteger(str2)) {
+                if (CCUtilities.isInteger(str2)) {
                     str2 = "0";
                 }
                 
@@ -360,7 +361,7 @@ public class CCSetting {
 
         for (String text : path) {
             ArrayList<CCSettingNode> hit = new ArrayList();
-            boolean isInteger = CCSettingUtil.isInteger(text);
+            boolean isInteger = CCUtilities.isInteger(text);
             
             for (CCSettingNode parent : seeking) {
                 int count = parent.size();

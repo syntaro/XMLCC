@@ -21,6 +21,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
+import jp.synthtarou.cceditor.common.CCUtilities;
 
 /**
  *
@@ -70,7 +71,7 @@ public class CCSettingNode {
     
     public boolean isInteger() {
         if (_path.size() > 0) {
-            return CCSettingUtil.isInteger(_path.get(_path.size() -1));
+            return CCUtilities.isInteger(_path.get(_path.size() -1));
         }
         return false;
     }
@@ -222,7 +223,7 @@ public class CCSettingNode {
         boolean wasnum = false;
         boolean first = true;
         for (String e : _path) {
-            if (CCSettingUtil.isInteger(e)) {
+            if (CCUtilities.isInteger(e)) {
                 if (wasnum) {
                 }else {
                 }

@@ -34,5 +34,25 @@ Click nbfs://nbhost/SystemFileSystem/Templates/XML/XMLDocument.xml to edit this 
             対応すみ
         </feedback>
     </task>
+    <task number="12">
+        <problem date="2023-06-04">
+            XMLを保存できるようにする。テキスト要素を編集可能にする
+        </problem>
+    </task>
+    <task number="13">
+        <problem date="2023-06-04">
+            信号を送ったり受け取ったりする (定義ファイルはまだ無視していい）
+        </problem>
+    </task>
+    <task number="14">
+        <problem date="2023-06-04">
+            信号を送ったり受け取ったりする (定義ファイルから選択する)
+        </problem>
+    </task>
+    <task number="15">
+        <problem date="2023-06-04">
+            全設定をINIファイルに保存する
+        </problem>
+    </task>
 </root>
 

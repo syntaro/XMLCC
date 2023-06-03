@@ -19,6 +19,7 @@ package jp.synthtarou.cceditor.xml;
 
 import java.util.ArrayList;
 import javax.swing.text.html.CSS;
+import jp.synthtarou.cceditor.common.CCUtilities;
 import jp.synthtarou.cceditor.common.CCWrapDataList;
 import jp.synthtarou.cceditor.xml.definition.CCXMLTagRule;
 import jp.synthtarou.cceditor.xml.definition.CCXMLRule;

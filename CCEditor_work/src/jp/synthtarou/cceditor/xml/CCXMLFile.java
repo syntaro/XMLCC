@@ -16,22 +16,37 @@
  */
 package jp.synthtarou.cceditor.xml;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import jp.synthtarou.cceditor.common.CCLineReader;
+import jp.synthtarou.cceditor.common.CCUtilities;
 import jp.synthtarou.cceditor.common.CCWrapData;
 import jp.synthtarou.cceditor.common.CCWrapDataList;
 import jp.synthtarou.cceditor.xml.definition.CCXMLAttributeRule;
 import jp.synthtarou.cceditor.xml.definition.CCXMLTagRule;
 import jp.synthtarou.cceditor.xml.definition.CCXMLRule;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -45,9 +60,9 @@ import org.xml.sax.SAXParseException;
 public class CCXMLFile {
 
     final ArrayList<CCXMLNode> _arrayModuleData = new ArrayList<>();
-    final File _file;
+    public final File _file;
     final ArrayList<CCXMLNode> _listWarning = new ArrayList<>();
-    final Exception _loadError;
+    Exception _loadError;
 
     public String toString() {
         return _file.toString();
@@ -99,43 +114,92 @@ public class CCXMLFile {
             if (!name.contains("8850")) {
                 continue;
             }
+            if (name.contains("_back")) {
+                continue;
+            }
             if (name.endsWith(".xml")) {
                 if (file.canRead()) {
                     System.out.println("XMLFile [" + name + "]");
 
-                    CCXMLFile f2 = new CCXMLFile(file);
-                    f2.dumpWarning();
-                    f2.dumpXML();
+                    try {
+                        CCXMLFile f2 = new CCXMLFile(file);
+                        f2.dumpWarning();
+                        f2.writeDocument(System.out);
+                    } catch (TransformerException ex) {
+                        Logger.getLogger(CCXMLFile.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         }
     }
 
+    static File _editingDirecotory = new File(CCUtilities.getAppBaseDirectory(), "Editing");
+
+    public CCXMLFile(String name) {
+        this(new File(_editingDirecotory, name));
+    }
+
+    public final String _fileEncoding;
+    
     public CCXMLFile(File file) {
         _file = file;
 
         Element docElement;
+        
+        String encoding = null;
 
+        try {
+            InputStream check = new FileInputStream(file);
+            CCLineReader reader = new CCLineReader(check);
+            String line = reader.readLine();
+
+            //only support 2
+            if (line.contains("encoding=\"Shift_JIS\"")) {
+                encoding = "Shift_JIS";
+            } else if (line.contains("encoding=\"Windows-31J\"")) {
+                encoding = "Windows-31J";
+            } else {
+                encoding = null;
+
+            }
+            try {
+                check.close();
+            } catch (IOException ex) {
+                Logger.getLogger(CCXMLFile.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        }catch(IOException ex) {
+            _loadError = ex;
+            return;
+        }
+        finally {
+            _fileEncoding = encoding;
+        }
         try {
             SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
             SAXParser saxParser = saxParserFactory.newSAXParser();
             InputStream stream = new FileInputStream(file);
             CCDocumentHandler handler = new CCDocumentHandler();
+            
 
             try {
                 InputSource source = new InputSource(stream);
                 saxParser.parse(source, handler);
+                System.out.println("source encoding  = "+ source.getEncoding());
+
             } finally {
                 stream.close();
             }
-
+            
             _arrayModuleData.clear();
 
+            loopShrink(handler._document);
             for (CCXMLNode moduleNode : handler._document._listChildTags) {
                 CCXMLRule rule = CCXMLRule.getInstance();
-
-                fillRules(moduleNode, rule.getModuleDataTag());
-                _arrayModuleData.add(moduleNode);
+                if (moduleNode._name.equalsIgnoreCase(rule.getModuleDataTag().getName())) {
+                    fillRules(moduleNode, rule.getModuleDataTag());
+                    _arrayModuleData.add(moduleNode);
+                }
             }
         } catch (ParserConfigurationException ex) {
             _loadError = ex;
@@ -152,17 +216,17 @@ public class CCXMLFile {
 
     public void fillRules(CCXMLNode target, CCXMLTagRule targetRule) {
         target._warningText = null;
-        
+
         if (targetRule == null) {
             target._warningText = " this is undocumented ";
             _listWarning.add(target);
             return;
         }
- 
+
         StringBuffer warning = new StringBuffer();
         ArrayList<String> missingAttr = new ArrayList<>();
         ArrayList<String> undocumentedAttr = new ArrayList<>();
-        
+
         for (CCXMLAttributeRule ruleAttr : targetRule.listAttributes()) {
             if (ruleAttr.isMust()) {
                 if (target._listAttributes.indexOfName(ruleAttr.getName()) < 0) {
@@ -171,20 +235,20 @@ public class CCXMLFile {
             }
         }
         if (missingAttr.size() > 0) {
-            warning.append(" missing attributes [" + missingAttr +"]");
+            warning.append(" missing attributes [" + missingAttr + "]");
         }
-        for (CCWrapData<String> keyValue :  target._listAttributes) {
+        for (CCWrapData<String> keyValue : target._listAttributes) {
             if (targetRule.getAttribute(keyValue.name) == null) {
                 undocumentedAttr.add(keyValue.name + "=" + keyValue.value);
             }
         }
 
         if (undocumentedAttr.size() > 0) {
-            warning.append(" undocumented attributes [" + undocumentedAttr +"]");
+            warning.append(" undocumented attributes [" + undocumentedAttr + "]");
         }
 
         ArrayList<String> undocumentedTag = new ArrayList<>();
-        
+
         for (CCXMLNode child : target._listChildTags) {
             CCXMLTagRule childRule = targetRule.findChildRule(child._name);
             if (childRule == null) {
@@ -194,7 +258,7 @@ public class CCXMLFile {
         }
 
         if (undocumentedTag.size() > 0) {
-            warning.append(" undocumented tags [" + undocumentedTag +"]");
+            warning.append(" undocumented tags [" + undocumentedTag + "]");
         }
         if (warning.length() > 0) {
             target._warningText = warning.toString();
@@ -204,82 +268,6 @@ public class CCXMLFile {
 
     public void dumpWarning() {
         System.out.println(getAdviceForXML());
-    }
-
-    public void dumpXML() {
-        for (int i = 0; i < _arrayModuleData.size(); ++i) {
-            System.out.println("Dumping " + (i + 1) + " / " + _arrayModuleData.size());
-            dumpXMLSub(0, _arrayModuleData.get(i));
-        }
-    }
-
-    public void dumpXMLSub(int indent, CCXMLNode module) {
-        StringBuffer strIndent = new StringBuffer();
-        for (int i = 0; i < indent; ++i) {
-            strIndent.append("....");
-        }
-
-        StringBuffer strAttributes = new StringBuffer();
-        for (CCWrapData<String> attr : module._listAttributes) {
-            strAttributes.append("[");
-            strAttributes.append(attr.name);
-            strAttributes.append("=");
-            strAttributes.append(attr.value);
-            strAttributes.append("]");
-        }
-
-        System.out.println(strIndent.toString() + "\"" + module._name + "\"" + strAttributes.toString());
-
-        if (module._rule != null && module._rule.hasTextContents()) {
-            System.out.println(strIndent.toString() + "=" + module._textContext);
-        }
-
-        for (CCXMLNode child : module._listChildTags) {
-            dumpXMLSub(indent + 1, child);
-        }
-    }
-
-    public static String shrinkSpace(String original) {
-        if (original == null) {
-            return null;
-        }
-
-        int start = 0;
-        int end = original.length();
-
-        if (start < end) {
-            char c = original.charAt(start);
-            if (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
-                start++;
-            }
-            c = original.charAt(end - 1);
-            if (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
-                end--;
-            }
-            if (start == 0 && end == original.length() /* && original.indexOf('\n') < 0 */) {
-                return original;
-            }
-
-            if (start == end) {
-                return "";
-            }
-            if (start < end) {
-                return original.substring(start, end - 1);
-            }
-        }
-
-        return original;
-        /*
-        StringBuffer buf = new StringBuffer();
-        for (int i = start; i < end; ++i) {
-            char c = original.charAt(i);
-            if (c == '\n') {
-                buf.append("\\n");
-            } else {
-                buf.append(c);
-            }
-        }
-        return buf.toString();*/
     }
 
     public static String getPathOfNode(Node node) {
@@ -301,7 +289,7 @@ public class CCXMLFile {
     public List<CCXMLNode> listWarning() {
         return Collections.unmodifiableList(_listWarning);
     }
-    
+
     public String getAdviceForXML() {
         if (_loadError != null) {
             if (_loadError instanceof SAXParseException) {
@@ -321,5 +309,122 @@ public class CCXMLFile {
             str.append("" + node._lineNumber + ", " + node._columnNumber + ": " + node._warningText);
         }
         return str.toString();
+    }
+
+    public static void prepareNode(Document doc, Element parent, CCXMLNode ccnode) {
+        Element newnode = doc.createElement(ccnode._name);
+
+        if (ccnode._textContext != null && ccnode._textContext.length() > 0) {
+            newnode.setTextContent(CCUtilities.shrinkText(ccnode._textContext));
+        }
+        for (CCWrapData<String> attr : ccnode._listAttributes) {
+            String name = attr.name;
+            String value = attr.value;
+            newnode.setAttribute(name, value);
+        }
+
+        if (parent == null) {
+            doc.appendChild(newnode);
+        } else {
+            parent.appendChild(newnode);
+        }
+
+        for (CCXMLNode child : ccnode._listChildTags) {
+            prepareNode(doc, newnode, child);
+        }
+    }
+
+    public Document prepareDocument() {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        try {
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.newDocument();
+
+            for (int i = 0; i < countModule(); ++i) {
+                CCXMLNode ccnode = getModule(i);
+
+                doc.getDocumentElement();
+                prepareNode(doc, null, ccnode);
+            }
+            return doc;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    File _temporary = null;
+
+    public boolean writeToTeporary() throws IOException, TransformerException {
+        _temporary = null;
+        File temporary = CCUtilities.createTemporaryFile(_file);
+        writeDocumentSub(temporary, prepareDocument());
+        if (CCUtilities.compareFileText(_file, temporary) == 0) {
+            temporary.delete();
+            return false;
+        }
+        _temporary = temporary;
+        return true;
+    }
+
+    public void moveTemporaryToThis() {
+        if (_temporary != null) {
+            File temp = _temporary;
+            CCUtilities.safeRenameToBackup(_file);
+            if (_file.exists()) {
+                _file.delete();
+            }
+            _temporary.renameTo(_file);
+        }
+    }
+
+    public void writeDocument(OutputStream file) throws TransformerException {
+        writeDocumentSub(file, prepareDocument());
+    }
+
+    public void writeDocumentSub(OutputStream file, Document doc) throws TransformerException {
+        TransformerFactory factory = TransformerFactory.newInstance();
+        Transformer tf = factory.newTransformer();
+
+        tf.setOutputProperty("indent", "yes");
+        if (_fileEncoding == null) {
+            tf.setOutputProperty("encoding", "UTF-8");
+        }
+        else {
+            tf.setOutputProperty("encoding", _fileEncoding);
+        }
+
+        tf.transform(new DOMSource(doc), new StreamResult(file));
+    }
+
+    public void writeDocumentSub(File file, Document doc) throws IOException, TransformerException {
+        boolean result = false;
+        System.out.println("writing " + file);
+        OutputStream out = new FileOutputStream(file);
+        BufferedOutputStream bout = new BufferedOutputStream(out);
+        writeDocumentSub(bout, doc);
+        out.close();
+    }
+
+
+
+    public void loopShrink(CCXMLNode target) {
+        for (CCXMLNode node : target._listChildTags) {
+            String text = node.getTextContent();
+            if (text != null) {
+                String newtext = CCUtilities.shrinkText(text);
+                if (newtext.length() == 0) {
+                    node.setTextContent(null);
+                }
+                else {
+                    if (newtext.length() != text.length()) {
+                        System.out.println("shrinked " + newtext + " from [" + text + "]");
+                        node.setTextContent(newtext);
+                    }
+                }
+            }
+            loopShrink(node);
+        }
     }
 }
