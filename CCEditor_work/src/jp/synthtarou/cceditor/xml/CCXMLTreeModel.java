@@ -50,13 +50,16 @@ public class CCXMLTreeModel implements TreeModel {
 
     @Override
     public boolean isLeaf(Object node) {
-        CCXMLNode it =  (CCXMLNode)node;
-        if (it._rule != null) {
-            if (it._rule.listChildTags() == null
-              ||it._rule.listChildTags().size() == 0) {
+        if (getChildCount(node) == 0) {
+            return true;
+        }
+        /*
+        if (it._tagRule != null) {
+            if (it._tagRule.listChildTags() == null
+              ||it._tagRule.listChildTags().size() == 0) {
                 return true;
             }
-        }
+        }*/
         return false;
     }
 

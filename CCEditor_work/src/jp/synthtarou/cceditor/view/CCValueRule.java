@@ -21,8 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 import jp.synthtarou.cceditor.common.CCUtilities;
 import jp.synthtarou.cceditor.xml.CCXMLNode;
-import jp.synthtarou.cceditor.xml.definition.CCXMLAttributeRule;
-import jp.synthtarou.cceditor.xml.definition.CCXMLTagRule;
+import jp.synthtarou.cceditor.xml.rules.CCXMLAttributeRule;
+import jp.synthtarou.cceditor.xml.rules.CCXMLTagRule;
 
 /**
  *

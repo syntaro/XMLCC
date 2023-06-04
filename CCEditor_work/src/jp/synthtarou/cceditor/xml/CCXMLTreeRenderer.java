@@ -23,7 +23,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import jp.synthtarou.cceditor.common.CCWrapData;
-import jp.synthtarou.cceditor.xml.definition.CCXMLAttributeRule;
+import jp.synthtarou.cceditor.xml.rules.CCXMLAttributeRule;
 
 /**
  *
@@ -86,10 +86,10 @@ public class CCXMLTreeRenderer implements TreeCellRenderer {
             ArrayList<String> listAttrDefined = new ArrayList();
             ArrayList<String> listAttrNonedefined = new ArrayList();
 
-            if (node._rule != null) {
+            if (node._tagRule != null) {
                 HashSet<String> already = new HashSet();
 
-                for (CCXMLAttributeRule dump :  node._rule.listAttributes()) {
+                for (CCXMLAttributeRule dump :  node._tagRule.listAttributes()) {
                     String name = dump.getName();
                     String value = node._listAttributes.valueOfName(name);
                     if (value != null) {
@@ -107,7 +107,7 @@ public class CCXMLTreeRenderer implements TreeCellRenderer {
             }
             else {
                 for (CCWrapData<String> attr : node._listAttributes) {
-                    listAttrNonedefined.add(attr.name + "="  + attr.value);
+                    listAttrNonedefined.add(attr.name + "="  + escapeDQuote(attr.value));
                 }
             }
             
@@ -125,7 +125,7 @@ public class CCXMLTreeRenderer implements TreeCellRenderer {
                 }
             }
             if (listAttrNonedefined.size() > 0) {
-                for (String seg : listAttrDefined) {
+                for (String seg : listAttrNonedefined) {
                     if (!first)  {
                         text.append(", ");
                     }else {                        

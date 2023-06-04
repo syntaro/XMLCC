@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package jp.synthtarou.cceditor.xml.definition;
+package jp.synthtarou.cceditor.xml.rules;
 
 import jp.synthtarou.cceditor.view.CCValueRule;
 
@@ -42,6 +42,16 @@ public class CCXMLAttributeRule {
             _must = false;
             _defaultValue = defaultValue;
         }
+    }
+    
+    public String toString() {
+        if (_must) {
+            return _name +"(must)";
+        }
+        if (_defaultValue != null) {
+            return _name + "=" + _defaultValue;
+        }
+        return _name;
     }
 
     public String getName() {

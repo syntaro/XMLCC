@@ -16,11 +16,12 @@
  */
 package jp.synthtarou.cceditor.view;
 
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import jp.synthtarou.cceditor.common.CCWrapData;
 import jp.synthtarou.cceditor.view.common.CCPromptUtil;
 import jp.synthtarou.cceditor.view.common.CCTextPrompt;
-import jp.synthtarou.cceditor.view.common.IPromptForInput;
+import jp.synthtarou.cceditor.view.common.CCXMLAttributePrompt;
 import jp.synthtarou.cceditor.xml.CCXMLNode;
 
 /**
@@ -30,6 +31,7 @@ import jp.synthtarou.cceditor.xml.CCXMLNode;
 public class CCV520XMLEditorForTag extends javax.swing.JPanel {
 
     final CCV500XMLRoot _root;
+
     CCXMLNode _node;
 
     /**
@@ -43,7 +45,12 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
     public void setTargetNode(CCXMLNode node) {
         jTextFieldTagPath.setText(node.getAsPathString());
         _node = node;
+
         jTextAreaTextContent.setText(node.getTextContent());
+        createAttributeTableModel();
+    }
+
+    public void createAttributeTableModel() {
         DefaultTableModel model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -52,10 +59,11 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
         };
         model.addColumn("Name");
         model.addColumn("Value");
-        for (CCWrapData<String> attr : node._listAttributes) {
+        for (CCWrapData<String> attr : _node._listAttributes) {
             model.addRow(new Object[]{attr.name, attr.value});
         }
         jTable1.setModel(model);
+
     }
 
     /**
@@ -82,6 +90,7 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
         jPanel2 = new javax.swing.JPanel();
         jButtonRemoveAttribute = new javax.swing.JButton();
         jButtonAddAttribute = new javax.swing.JButton();
+        jButtonEditAttribute = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
 
@@ -108,7 +117,7 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jButtonDeleteThisTag, gridBagConstraints);
 
-        jButtonDuplicateThisTag.setText("+Duplicate Broser Tag");
+        jButtonDuplicateThisTag.setText("+Duplicate This Tag");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 6;
@@ -165,21 +174,44 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
 
         jSplitPane3.setLeftComponent(jPanel1);
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Tag's Attribuets Editor"));
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Attributes"));
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jButtonRemoveAttribute.setText("- Delete Attribute");
+        jButtonRemoveAttribute.setText("- Remove");
+        jButtonRemoveAttribute.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonRemoveAttributeActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         jPanel2.add(jButtonRemoveAttribute, gridBagConstraints);
 
-        jButtonAddAttribute.setText("+New Attribute");
+        jButtonAddAttribute.setText("+Add");
+        jButtonAddAttribute.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonAddAttributeActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        jPanel2.add(jButtonAddAttribute, gridBagConstraints);
+
+        jButtonEditAttribute.setText("Edit");
+        jButtonEditAttribute.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonEditAttributeActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        jPanel2.add(jButtonAddAttribute, gridBagConstraints);
+        gridBagConstraints.weightx = 1.0;
+        jPanel2.add(jButtonEditAttribute, gridBagConstraints);
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -209,7 +241,7 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -231,19 +263,85 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
         if (_node == null) {
             return;
         }
-        CCTextPrompt text = new CCTextPrompt(_node.getTextContent(), "Text Of Tag");
-        CCPromptUtil.showPrompt(this, text);
-        String editedText = text.getPromptResult();
-        if (editedText != null) {
-            _node.setTextContent(editedText);
-            jTextAreaTextContent.setText(editedText);
+        CCTextPrompt prompt = new CCTextPrompt(_node.getTextContent(), "Text Of Tag");
+        CCPromptUtil.showPrompt(this, prompt);
+        String result = prompt.getPromptResult();
+        if (result != null) {
+            _node.setTextContent(result);
+            jTextAreaTextContent.setText(result);
         }
     }//GEN-LAST:event_jTextAreaTextContentMousePressed
+
+    private void jButtonAddAttributeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddAttributeActionPerformed
+        if (_node == null) {
+            return;
+        }
+        CCXMLAttributePrompt prompt = new CCXMLAttributePrompt(_node, null, null);
+        CCPromptUtil.showPrompt(this, prompt);
+        CCWrapData<String> result = prompt.getPromptResult();
+        if (result != null) {
+            if (result.name == null || result.name.length() == 0) {
+                return;
+            }
+            _node._listAttributes.addNameAndValue(result.name, result.value);
+            createAttributeTableModel();
+        }
+    }//GEN-LAST:event_jButtonAddAttributeActionPerformed
+
+    private void jButtonRemoveAttributeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRemoveAttributeActionPerformed
+        if (_node == null) {
+            return;
+        }
+        int row = jTable1.getSelectedRow();
+
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        String name = (String) model.getValueAt(row, 0);
+        String value = (String) model.getValueAt(row, 1);
+
+        int x = JOptionPane.showConfirmDialog(this, "Remove attrribute [" + name + "=" + value + "]", "Remove Attribute", JOptionPane.YES_NO_OPTION);
+
+        if (x == JOptionPane.YES_OPTION) {
+            int i = _node._listAttributes.indexOfName(name);
+            _node._listAttributes.remove(i);
+            createAttributeTableModel();
+        }
+    }//GEN-LAST:event_jButtonRemoveAttributeActionPerformed
+
+    private void jButtonEditAttributeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditAttributeActionPerformed
+        if (_node == null) {
+            return;
+        }
+        int row = jTable1.getSelectedRow();
+
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        String name = (String) model.getValueAt(row, 0);
+        String value = (String) model.getValueAt(row, 1);
+
+        CCXMLAttributePrompt prompt = new CCXMLAttributePrompt(_node, name, value);
+        CCPromptUtil.showPrompt(this, prompt);
+        CCWrapData<String> result = prompt.getPromptResult();
+        if (result != null) {
+            if (result.name == null || result.name.length() == 0) {
+                return;
+            }
+            if (name.equals(result.name)) {
+                int prevIndex = _node._listAttributes.indexOfName(name);
+                _node._listAttributes.set(prevIndex, new CCWrapData(name, result.value));
+            } else {
+                int prevIndex = _node._listAttributes.indexOfName(name);
+                _node._listAttributes.remove(prevIndex);
+                _node._listAttributes.addNameAndValue(result.name, result.value);
+            }
+            createAttributeTableModel();
+        }
+
+    }//GEN-LAST:event_jButtonEditAttributeActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonAddAttribute;
     private javax.swing.JButton jButtonDeleteThisTag;
     private javax.swing.JButton jButtonDuplicateThisTag;
+    private javax.swing.JButton jButtonEditAttribute;
     private javax.swing.JButton jButtonNewChildTag;
     private javax.swing.JButton jButtonRemoveAttribute;
     private javax.swing.JLabel jLabel2;

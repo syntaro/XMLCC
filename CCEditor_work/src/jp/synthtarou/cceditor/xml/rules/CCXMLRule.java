@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package jp.synthtarou.cceditor.xml.definition;
+package jp.synthtarou.cceditor.xml.rules;
 
 import java.util.HashSet;
 import java.util.List;

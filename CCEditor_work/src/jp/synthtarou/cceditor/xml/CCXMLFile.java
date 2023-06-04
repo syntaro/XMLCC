@@ -43,9 +43,9 @@ import jp.synthtarou.cceditor.common.CCLineReader;
 import jp.synthtarou.cceditor.common.CCUtilities;
 import jp.synthtarou.cceditor.common.CCWrapData;
 import jp.synthtarou.cceditor.common.CCWrapDataList;
-import jp.synthtarou.cceditor.xml.definition.CCXMLAttributeRule;
-import jp.synthtarou.cceditor.xml.definition.CCXMLTagRule;
-import jp.synthtarou.cceditor.xml.definition.CCXMLRule;
+import jp.synthtarou.cceditor.xml.rules.CCXMLAttributeRule;
+import jp.synthtarou.cceditor.xml.rules.CCXMLTagRule;
+import jp.synthtarou.cceditor.xml.rules.CCXMLRule;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -193,7 +193,6 @@ public class CCXMLFile {
             
             _arrayModuleData.clear();
 
-            loopShrink(handler._document);
             for (CCXMLNode moduleNode : handler._document._listChildTags) {
                 CCXMLRule rule = CCXMLRule.getInstance();
                 if (moduleNode._name.equalsIgnoreCase(rule.getModuleDataTag().getName())) {
@@ -405,26 +404,5 @@ public class CCXMLFile {
         BufferedOutputStream bout = new BufferedOutputStream(out);
         writeDocumentSub(bout, doc);
         out.close();
-    }
-
-
-
-    public void loopShrink(CCXMLNode target) {
-        for (CCXMLNode node : target._listChildTags) {
-            String text = node.getTextContent();
-            if (text != null) {
-                String newtext = CCUtilities.shrinkText(text);
-                if (newtext.length() == 0) {
-                    node.setTextContent(null);
-                }
-                else {
-                    if (newtext.length() != text.length()) {
-                        System.out.println("shrinked " + newtext + " from [" + text + "]");
-                        node.setTextContent(newtext);
-                    }
-                }
-            }
-            loopShrink(node);
-        }
     }
 }

@@ -18,11 +18,9 @@
 package jp.synthtarou.cceditor.xml;
 
 import java.util.ArrayList;
-import javax.swing.text.html.CSS;
-import jp.synthtarou.cceditor.common.CCUtilities;
 import jp.synthtarou.cceditor.common.CCWrapDataList;
-import jp.synthtarou.cceditor.xml.definition.CCXMLTagRule;
-import jp.synthtarou.cceditor.xml.definition.CCXMLRule;
+import jp.synthtarou.cceditor.xml.rules.CCXMLTagRule;
+import jp.synthtarou.cceditor.xml.rules.CCXMLRule;
 
 /**
  *
@@ -31,13 +29,13 @@ import jp.synthtarou.cceditor.xml.definition.CCXMLRule;
 public class CCXMLNode  {
     public CCXMLNode(CCXMLNode parent, String name, CCXMLTagRule rule) {
         _name = name;
-        _rule = rule;
+        _tagRule = rule;
         _parent = parent;
         _listAttributes = new CCWrapDataList<>();
         _listAttributes.setIgnoreCase(true);
     }
     
-    final CCXMLTagRule _rule;
+    final CCXMLTagRule _tagRule;
     final String _name;
     final CCXMLNode _parent;
 
@@ -74,7 +72,7 @@ public class CCXMLNode  {
     }
     
     public CCXMLTagRule getTagRule() {
-        return _rule;
+        return _tagRule;
     }
     
     public CCXMLNode getParent() {

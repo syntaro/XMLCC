@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package jp.synthtarou.cceditor.xml.definition;
+package jp.synthtarou.cceditor.xml.rules;
 
 import jp.synthtarou.cceditor.view.CCValueRule;
 import java.util.ArrayList;
@@ -99,4 +99,10 @@ public class CCXMLTagRule {
         return _textContents;
     }
     
+
+    public String toString() {
+        return _name;
+    }
+            
 }
+

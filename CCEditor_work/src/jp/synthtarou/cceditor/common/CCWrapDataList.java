@@ -80,6 +80,31 @@ public class CCWrapDataList<T> extends ArrayList<CCWrapData<T>> implements ListM
         }
     }
 
+    public int indexOfNameShrink(String name) {
+        name = CCUtilities.shrinkText(name);
+        if (_ignoreCase) {
+            int x = 0;
+            for (CCWrapData<T> e : this) {
+                String name2 = CCUtilities.shrinkText(e.name);
+                if(name2.equalsIgnoreCase(name)) {
+                    return x;
+                }
+                x ++;
+            }
+            return -1;
+        }else {
+            int x = 0;
+            for (CCWrapData<T> e : this) {
+                String name2 = CCUtilities.shrinkText(e.name);
+                if(name2.equalsIgnoreCase(name)) {
+                    return x;
+                }
+                x ++;
+            }
+            return -1;
+        }
+    }
+
     public int indexOfName(String name) {
         if (_ignoreCase) {
             int x = 0;

@@ -17,8 +17,10 @@
 package jp.synthtarou.cceditor.xml;
 
 import java.util.LinkedList;
+import java.util.List;
 import jp.synthtarou.cceditor.common.CCUtilities;
-import jp.synthtarou.cceditor.xml.definition.CCXMLRule;
+import jp.synthtarou.cceditor.xml.rules.CCXMLRule;
+import jp.synthtarou.cceditor.xml.rules.CCXMLTagRule;
 import org.w3c.dom.Node;
 import org.w3c.dom.UserDataHandler;
 import org.xml.sax.Attributes;
@@ -30,14 +32,15 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Syntarou YOSHIDA
  */
 public class CCDocumentHandler extends DefaultHandler {
-    public static final String USERDATA_PATH = "user.path"; 
-    public static final String USERDATA_STARTLINE = "user.startLine"; 
-    public static final String USERDATA_STARTCOLUMN = "user.startColumn";     
+
+    public static final String USERDATA_PATH = "user.path";
+    public static final String USERDATA_STARTLINE = "user.startLine";
+    public static final String USERDATA_STARTCOLUMN = "user.startColumn";
 
     LinkedList<CCXMLNode> _cursor = new LinkedList();
     CCXMLNode _document = new CCXMLNode(null, "", CCXMLRule.getInstance().getRootTag());
     Locator _locator;
-    
+
     public CCDocumentHandler() {
     }
 
@@ -69,11 +72,43 @@ public class CCDocumentHandler extends DefaultHandler {
             }
         }
     };
-    
+
+    public static CCXMLTagRule findRule(List<CCXMLNode> path, String child) {
+        CCXMLTagRule root = CCXMLRule.getInstance().getRootTag();
+        CCXMLTagRule rule = root;
+        for (CCXMLNode seek : path) {
+            rule = rule.findChildRule(seek._name);
+            if (rule == null) {
+                return null;
+            }
+        }
+        if (rule != null) {
+            rule = rule.findChildRule(child);
+        }
+        return rule;
+    }
+
+    public void loopShrink(CCXMLNode target) {
+        for (CCXMLNode node : target._listChildTags) {
+            String text = node.getTextContent();
+            if (text != null) {
+                String newtext = CCUtilities.shrinkText(text);
+                if (newtext.length() == 0) {
+                    node.setTextContent(null);
+                } else {
+                    if (newtext.length() != text.length()) {
+                        node.setTextContent(newtext);
+                    }
+                }
+            }
+            loopShrink(node);
+        }
+    }
+
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) {
-        CCXMLNode parent = _cursor.isEmpty() ? _document: _cursor.getLast();
-        CCXMLNode child = new CCXMLNode(parent,  qName, null);
+        CCXMLNode parent = _cursor.isEmpty() ? _document : _cursor.getLast();
+        CCXMLNode child = new CCXMLNode(parent, qName, findRule(_cursor, qName));
 
         parent._listChildTags.add(child);
         _cursor.add(child);
@@ -94,7 +129,7 @@ public class CCDocumentHandler extends DefaultHandler {
     public void characters(char[] ch, int offset, int length) {
         StringBuffer ret = new StringBuffer();
         ret.append(ch, offset, length);
-        
+
         if (_cursor == null || _cursor.getLast() == null) {
             return;
         }
@@ -103,8 +138,7 @@ public class CCDocumentHandler extends DefaultHandler {
             String prev = _cursor.getLast().getTextContent();
             if (prev != null) {
                 _cursor.getLast().setTextContent(prev + ret);
-            }
-            else {
+            } else {
                 _cursor.getLast().setTextContent(ret.toString());
             }
         }
@@ -116,7 +150,7 @@ public class CCDocumentHandler extends DefaultHandler {
             CCXMLNode lastLeaf = _cursor.getLast();
             if (lastLeaf._name.equals(qName)) {
                 _cursor.removeLast();
-                
+
                 if (_cursor.isEmpty() == false) {
                     lastLeaf = _cursor.getLast();
                 }
@@ -126,5 +160,6 @@ public class CCDocumentHandler extends DefaultHandler {
 
     @Override
     public void endDocument() {
+        loopShrink(_document);
     }
 }
