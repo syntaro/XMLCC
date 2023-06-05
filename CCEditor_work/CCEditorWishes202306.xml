@@ -38,6 +38,9 @@ Click nbfs://nbhost/SystemFileSystem/Templates/XML/XMLDocument.xml to edit this 
         <problem date="2023-06-04">
             XMLを保存できるようにする。テキスト要素を編集可能にする
         </problem>
+        <feedback date="2023-06-05">
+            対応すみ
+        </feedback>
     </task>
     <task number="13">
         <problem date="2023-06-04">
@@ -52,6 +55,34 @@ Click nbfs://nbhost/SystemFileSystem/Templates/XML/XMLDocument.xml to edit this 
     <task number="15">
         <problem date="2023-06-04">
             全設定をINIファイルに保存する
+        </problem>
+    </task>
+    <task number="16">
+        <problem date="2023-06-05">
+            シーンにコントローラがぶら下がる、特定のトリガーが、CCアサインのシーンを入れかえる。
+
+            たとえば、
+            C4=シーン：シーンOP1
+            D4=シーン：シーンOP2
+            E4=シーン：シーンOP3
+            F4=シーン：シーンOP4
+            とシーンを切り替える。
+            キーC4～F4それぞれに変化させることも、C4で順番にサイクルすることもできる。
+
+            CC32=OP1 A
+            CC33=OP1 D
+            CC34=OP1 S
+            CC35=OP1 R
+            のモードから
+
+            CC32=OP2 A
+            CC33=OP2 D
+            CC34=OP2 S
+            CC35=OP2 R
+            にモードにできる。
+            
+            PAD1=OSC1 WAVE
+            については、PAD1を押したとき、定義ファイルにあたえられてる値リストを順番にたどることも？
         </problem>
     </task>
 </root>

@@ -35,9 +35,12 @@ public class CCXMLTreeRenderer implements TreeCellRenderer {
     @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         String text = "";
-        if (value != null) {
+        if (value != null && (value instanceof CCXMLNode)) {
             CCXMLNode node = (CCXMLNode)value;
             text = format(node);
+        }
+        else {
+            text = String.valueOf(value);
         }
         return _base.getTreeCellRendererComponent(tree, text, selected, expanded, leaf, row, hasFocus);
     }

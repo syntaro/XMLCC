@@ -22,7 +22,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import jp.synthtarou.cceditor.common.CCWrapData;
 import jp.synthtarou.cceditor.common.CCWrapDataList;
-import jp.synthtarou.cceditor.view.CCValueRule;
 import jp.synthtarou.cceditor.xml.CCXMLNode;
 import jp.synthtarou.cceditor.xml.rules.CCXMLAttributeRule;
 import jp.synthtarou.cceditor.xml.rules.CCXMLTagRule;

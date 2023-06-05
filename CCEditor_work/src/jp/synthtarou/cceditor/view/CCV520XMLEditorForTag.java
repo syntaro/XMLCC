@@ -19,10 +19,14 @@ package jp.synthtarou.cceditor.view;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import jp.synthtarou.cceditor.common.CCWrapData;
+import jp.synthtarou.cceditor.common.CCWrapDataList;
 import jp.synthtarou.cceditor.view.common.CCPromptUtil;
 import jp.synthtarou.cceditor.view.common.CCTextPrompt;
 import jp.synthtarou.cceditor.view.common.CCXMLAttributePrompt;
+import jp.synthtarou.cceditor.view.common.MyComboBoxRenderer1;
+import jp.synthtarou.cceditor.xml.CCXMLFile;
 import jp.synthtarou.cceditor.xml.CCXMLNode;
+import jp.synthtarou.cceditor.xml.CCXMLTreeModel;
 
 /**
  *
@@ -30,27 +34,32 @@ import jp.synthtarou.cceditor.xml.CCXMLNode;
  */
 public class CCV520XMLEditorForTag extends javax.swing.JPanel {
 
-    final CCV500XMLRoot _root;
-
-    CCXMLNode _node;
+    CCXMLNode _selection;
+    CCXMLNode _treeRoot;
+    CCXMLFile _file;
 
     /**
      * Creates new form DDEditorForTag
      */
-    public CCV520XMLEditorForTag(CCV500XMLRoot root) {
+    public CCV520XMLEditorForTag(CCXMLFile file) {
         initComponents();
-        _root = root;
+        _file = file;
+        setTargetFile(file);
     }
 
-    public void setTargetNode(CCXMLNode node) {
-        jTextFieldTagPath.setText(node.getAsPathString());
-        _node = node;
+    CCXMLTreeModel _treeModel;
 
-        jTextAreaTextContent.setText(node.getTextContent());
-        createAttributeTableModel();
+    public void setTargetFile(CCXMLFile file) {
+        //jTextFieldTagPath.setText(node.getAsPathString(null));
+        _file = file;
+
+        jComboBox1.setRenderer(new MyComboBoxRenderer1());
+        jComboBox1.setModel(file.listModules());
+        fillTreeSub(file.getModule(0));
     }
-
-    public void createAttributeTableModel() {
+    
+    void fillInputFields(CCXMLNode node) {
+        _selection = node;
         DefaultTableModel model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -59,11 +68,24 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
         };
         model.addColumn("Name");
         model.addColumn("Value");
-        for (CCWrapData<String> attr : _node._listAttributes) {
+        for (CCWrapData<String> attr : _selection._listAttributes) {
             model.addRow(new Object[]{attr.name, attr.value});
         }
         jTable1.setModel(model);
+        jTextAreaTextContent.setText(_selection.getTextContent());
+    }
 
+    void fillTreeSub(CCXMLNode root) {
+        _treeModel = new CCXMLTreeModel(root);
+        _treeModel.attachTreeView(jTree1, new Runnable() {
+            @Override
+            public void run() {
+                fillInputFields(_treeModel.getSelection());
+            }
+        });
+        jTree1.setModel(_treeModel);
+        fillInputFields(root);
+       _treeModel.selectNodeOnTree(root);
     }
 
     /**
@@ -76,6 +98,7 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        jSplitPane1 = new javax.swing.JSplitPane();
         jSplitPane3 = new javax.swing.JSplitPane();
         jPanel1 = new javax.swing.JPanel();
         jButtonNewChildTag = new javax.swing.JButton();
@@ -93,8 +116,18 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
         jButtonEditAttribute = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        jPanelBrowse = new javax.swing.JPanel();
+        jComboBox1 = new javax.swing.JComboBox<>();
+        jSplitPane2 = new javax.swing.JSplitPane();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTree1 = new javax.swing.JTree();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList<>();
+        jLabel1 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
+
+        jSplitPane1.setDividerLocation(300);
 
         jSplitPane3.setDividerLocation(200);
         jSplitPane3.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
@@ -172,7 +205,7 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         jPanel1.add(jScrollPane2, gridBagConstraints);
 
-        jSplitPane3.setLeftComponent(jPanel1);
+        jSplitPane3.setTopComponent(jPanel1);
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Attributes"));
         jPanel2.setLayout(new java.awt.GridBagLayout());
@@ -247,7 +280,41 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         jPanel2.add(jScrollPane3, gridBagConstraints);
 
-        jSplitPane3.setRightComponent(jPanel2);
+        jSplitPane3.setBottomComponent(jPanel2);
+
+        jSplitPane1.setRightComponent(jSplitPane3);
+
+        jPanelBrowse.setBorder(javax.swing.BorderFactory.createTitledBorder("Browse"));
+        jPanelBrowse.setLayout(new java.awt.GridBagLayout());
+
+        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBox1ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        jPanelBrowse.add(jComboBox1, gridBagConstraints);
+
+        jSplitPane2.setDividerLocation(300);
+        jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+
+        jScrollPane1.setViewportView(jTree1);
+
+        jSplitPane2.setTopComponent(jScrollPane1);
+
+        jList1.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                jList1ValueChanged(evt);
+            }
+        });
+        jScrollPane4.setViewportView(jList1);
+
+        jSplitPane2.setBottomComponent(jScrollPane4);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -256,68 +323,88 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(jSplitPane3, gridBagConstraints);
+        jPanelBrowse.add(jSplitPane2, gridBagConstraints);
+
+        jLabel1.setText("Module");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        jPanelBrowse.add(jLabel1, gridBagConstraints);
+
+        jSplitPane1.setLeftComponent(jPanelBrowse);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(jSplitPane1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jTextAreaTextContentMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTextAreaTextContentMousePressed
-        if (_node == null) {
+        if (_selection == null) {
             return;
         }
-        CCTextPrompt prompt = new CCTextPrompt(_node.getTextContent(), "Text Of Tag");
+        CCTextPrompt prompt = new CCTextPrompt(_selection.getTextContent(), "Text Of Tag");
         CCPromptUtil.showPrompt(this, prompt);
         String result = prompt.getPromptResult();
         if (result != null) {
-            _node.setTextContent(result);
+            _selection.setTextContent(result);
             jTextAreaTextContent.setText(result);
         }
     }//GEN-LAST:event_jTextAreaTextContentMousePressed
 
     private void jButtonAddAttributeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddAttributeActionPerformed
-        if (_node == null) {
+        if (_selection == null) {
             return;
         }
-        CCXMLAttributePrompt prompt = new CCXMLAttributePrompt(_node, null, null);
+        CCXMLAttributePrompt prompt = new CCXMLAttributePrompt(_selection, null, null);
         CCPromptUtil.showPrompt(this, prompt);
         CCWrapData<String> result = prompt.getPromptResult();
         if (result != null) {
             if (result.name == null || result.name.length() == 0) {
                 return;
             }
-            _node._listAttributes.addNameAndValue(result.name, result.value);
-            createAttributeTableModel();
+            _selection._listAttributes.addNameAndValue(result.name, result.value);
+            fillTreeSub(_selection);
         }
     }//GEN-LAST:event_jButtonAddAttributeActionPerformed
 
     private void jButtonRemoveAttributeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRemoveAttributeActionPerformed
-        if (_node == null) {
+        if (_selection == null) {
             return;
         }
         int row = jTable1.getSelectedRow();
 
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        if (model == null) {
+            return; //under constuction
+        }
         String name = (String) model.getValueAt(row, 0);
         String value = (String) model.getValueAt(row, 1);
 
         int x = JOptionPane.showConfirmDialog(this, "Remove attrribute [" + name + "=" + value + "]", "Remove Attribute", JOptionPane.YES_NO_OPTION);
 
         if (x == JOptionPane.YES_OPTION) {
-            int i = _node._listAttributes.indexOfName(name);
-            _node._listAttributes.remove(i);
-            createAttributeTableModel();
+            int i = _selection._listAttributes.indexOfName(name);
+            _selection._listAttributes.remove(i);
+            fillTreeSub(_selection);
         }
     }//GEN-LAST:event_jButtonRemoveAttributeActionPerformed
 
     private void jButtonEditAttributeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditAttributeActionPerformed
-        if (_node == null) {
+        if (_selection == null) {
             return;
         }
         int row = jTable1.getSelectedRow();
 
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        if (model == null) {
+            return; //under constuction
+        }
         String name = (String) model.getValueAt(row, 0);
         String value = (String) model.getValueAt(row, 1);
 
-        CCXMLAttributePrompt prompt = new CCXMLAttributePrompt(_node, name, value);
+        CCXMLAttributePrompt prompt = new CCXMLAttributePrompt(_selection, name, value);
         CCPromptUtil.showPrompt(this, prompt);
         CCWrapData<String> result = prompt.getPromptResult();
         if (result != null) {
@@ -325,17 +412,48 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
                 return;
             }
             if (name.equals(result.name)) {
-                int prevIndex = _node._listAttributes.indexOfName(name);
-                _node._listAttributes.set(prevIndex, new CCWrapData(name, result.value));
+                int prevIndex = _selection._listAttributes.indexOfName(name);
+                _selection._listAttributes.set(prevIndex, new CCWrapData(name, result.value));
             } else {
-                int prevIndex = _node._listAttributes.indexOfName(name);
-                _node._listAttributes.remove(prevIndex);
-                _node._listAttributes.addNameAndValue(result.name, result.value);
+                int prevIndex = _selection._listAttributes.indexOfName(name);
+                _selection._listAttributes.remove(prevIndex);
+                _selection._listAttributes.addNameAndValue(result.name, result.value);
             }
-            createAttributeTableModel();
+            fillTreeSub(_selection);
         }
 
     }//GEN-LAST:event_jButtonEditAttributeActionPerformed
+
+    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
+        int sel = jComboBox1.getSelectedIndex();
+        if (sel < 0) {
+            return;
+        }
+        fillTreeSub(_file.getModule(sel));
+    }//GEN-LAST:event_jComboBox1ActionPerformed
+
+
+    private void jList1ValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jList1ValueChanged
+        int index = jList1.getSelectedIndex();
+        if (index >= 0) {
+            CCXMLNode node = _warningListModel.valueOfIndex(index);
+
+            _treeModel.selectNodeOnTree(node);
+        }
+    }//GEN-LAST:event_jList1ValueChanged
+
+    CCWrapDataList<CCXMLNode> _warningListModel;
+
+    public CCWrapDataList<CCXMLNode> createWarningListModel() {
+        CCWrapDataList<CCXMLNode> ret = new CCWrapDataList<>();
+        for (CCXMLNode warn : _file.listWarning()) {
+            int line = warn.getLineNumber();
+            int col = warn.getColumnNumber();
+            ret.addNameAndValue("" + line + ", " + col + ": " + warn.getWarningText(), warn);
+        }
+        _warningListModel = ret;
+        return ret;
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonAddAttribute;
@@ -344,16 +462,25 @@ public class CCV520XMLEditorForTag extends javax.swing.JPanel {
     private javax.swing.JButton jButtonEditAttribute;
     private javax.swing.JButton jButtonNewChildTag;
     private javax.swing.JButton jButtonRemoveAttribute;
+    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JList<String> jList1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanelBrowse;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;
     private javax.swing.JTable jTable1;
     private javax.swing.JTextArea jTextAreaTextContent;
     private javax.swing.JTextField jTextFieldTagPath;
+    private javax.swing.JTree jTree1;
     // End of variables declaration//GEN-END:variables
 }

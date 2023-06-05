@@ -16,9 +16,9 @@
  */
 package jp.synthtarou.cceditor.xml.rules;
 
+import jp.synthtarou.cceditor.view.common.CCValueRule;
 import java.util.HashSet;
 import java.util.List;
-import jp.synthtarou.cceditor.view.CCValueRule;
 
 /**
  *

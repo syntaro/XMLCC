@@ -38,33 +38,22 @@ import static jp.synthtarou.cceditor.common.CCUtilities.getOwnerWindow;
  */
 public class CCPromptUtil {
 
-    static class MyModalWindow extends JDialog {
-
-        public MyModalWindow(Window parent) {
-            super(parent);
-        }
-
-        public MyModalWindow(Dialog parent) {
-            super(parent);
-        }
-    }
-
     public static void showPanelForTest(Container parent, JPanel panel) {
         Container cont = getOwnerWindow(parent);
         String title = Main.TITLE;
 
-        MyModalWindow modal = null;
+        JDialog modal = null;
         if (cont instanceof Frame) {
             Frame F = (Frame) cont;
-            modal = new MyModalWindow(F);
+            modal = new JDialog(F);
         } else if (cont instanceof Dialog) {
             Dialog D = (Dialog) cont;
-            modal = new MyModalWindow(D);
+            modal = new JDialog(D);
         } else if (cont instanceof Window) {
             Window W = (Window) cont;
-            modal = new MyModalWindow(W);
+            modal = new JDialog(W);
         } else {
-            modal = new MyModalWindow(null);
+            modal = new JDialog();
         }
         //modal.setLayout(new BoxLayout(modal, BoxLayout.LINE_AXIS));
         modal.add(panel, null);

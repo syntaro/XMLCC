@@ -111,23 +111,21 @@ public class CCXMLFile {
             }
             String name = file.getName();
             name = name.toLowerCase();
-            if (!name.contains("8850")) {
-                continue;
-            }
             if (name.contains("_back")) {
                 continue;
             }
             if (name.endsWith(".xml")) {
                 if (file.canRead()) {
                     System.out.println("XMLFile [" + name + "]");
+                    CCXMLFile f2 = new CCXMLFile(file);
+                    f2.dumpWarning();
 
+                    /*
                     try {
-                        CCXMLFile f2 = new CCXMLFile(file);
-                        f2.dumpWarning();
                         f2.writeDocument(System.out);
                     } catch (TransformerException ex) {
                         Logger.getLogger(CCXMLFile.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                    }*/
                 }
             }
         }
@@ -234,7 +232,7 @@ public class CCXMLFile {
             }
         }
         if (missingAttr.size() > 0) {
-            warning.append(" missing attributes [" + missingAttr + "]");
+            warning.append(" missing attributes " + missingAttr + "");
         }
         for (CCWrapData<String> keyValue : target._listAttributes) {
             if (targetRule.getAttribute(keyValue.name) == null) {
@@ -243,7 +241,7 @@ public class CCXMLFile {
         }
 
         if (undocumentedAttr.size() > 0) {
-            warning.append(" undocumented attributes [" + undocumentedAttr + "]");
+            warning.append(" undocumented attributes " + undocumentedAttr + "");
         }
 
         ArrayList<String> undocumentedTag = new ArrayList<>();
@@ -257,8 +255,9 @@ public class CCXMLFile {
         }
 
         if (undocumentedTag.size() > 0) {
-            warning.append(" undocumented tags [" + undocumentedTag + "]");
+            warning.append(" undocumented tags " + undocumentedTag + "");
         }
+
         if (warning.length() > 0) {
             target._warningText = warning.toString();
             _listWarning.add(target);
@@ -267,22 +266,6 @@ public class CCXMLFile {
 
     public void dumpWarning() {
         System.out.println(getAdviceForXML());
-    }
-
-    public static String getPathOfNode(Node node) {
-        LinkedList path = new LinkedList();
-
-        while (node != null) {
-            if (node.getParentNode() == null) {
-                if (node.getNodeName().equals("#document")) {
-                    break;
-                }
-            }
-            path.addFirst(node.getNodeName());
-            node = node.getParentNode();
-        }
-
-        return path.toString();
     }
 
     public List<CCXMLNode> listWarning() {

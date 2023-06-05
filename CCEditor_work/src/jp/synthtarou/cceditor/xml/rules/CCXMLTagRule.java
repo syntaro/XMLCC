@@ -16,7 +16,7 @@
  */
 package jp.synthtarou.cceditor.xml.rules;
 
-import jp.synthtarou.cceditor.view.CCValueRule;
+import jp.synthtarou.cceditor.view.common.CCValueRule;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

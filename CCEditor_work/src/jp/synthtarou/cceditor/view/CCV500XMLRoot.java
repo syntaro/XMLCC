@@ -31,24 +31,19 @@ import jp.synthtarou.cceditor.xml.CCXMLNode;
  * @author Syntarou YOSHIDA
  */
 public class CCV500XMLRoot extends javax.swing.JPanel implements IPromptForInput<CCXMLFile> {
-    private final CCV510XMLTagTree _xmlBrowser;
     private final CCV520XMLEditorForTag _editorForTag;
     private final CCV530XMLEditorForCC _editorForCC;
     private final CCV540XMLEditorForInstruments _editorForInst;
     public final CCXMLFile _file;
 
-    /**
-     * Creates new form Panel00MainEditor
-     */
     public CCV500XMLRoot(CCXMLFile file) {
         initComponents();
 
         _file = file;
 
-        _xmlBrowser = new CCV510XMLTagTree(this, file);
-        _editorForTag = new CCV520XMLEditorForTag(this);
-        _editorForCC = new CCV530XMLEditorForCC(this);
+        _editorForTag = new CCV520XMLEditorForTag(file);
         _editorForInst = new CCV540XMLEditorForInstruments(this);
+        _editorForCC = new CCV530XMLEditorForCC(this);
         
         JTabbedPane tab = new JTabbedPane();
         
@@ -56,8 +51,7 @@ public class CCV500XMLRoot extends javax.swing.JPanel implements IPromptForInput
         tab.add("Instrument", _editorForInst);
         tab.add("CC", _editorForCC);
 
-        jSplitPane1.setLeftComponent(_xmlBrowser);
-        jSplitPane1.setRightComponent(tab);
+        this.add(tab);
     }
 
     /**
@@ -69,21 +63,14 @@ public class CCV500XMLRoot extends javax.swing.JPanel implements IPromptForInput
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jSplitPane1 = new javax.swing.JSplitPane();
-
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.LINE_AXIS));
-        add(jSplitPane1);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JSplitPane jSplitPane1;
     // End of variables declaration//GEN-END:variables
 
-    public void setTargetNode(CCXMLNode node) {
-        _editorForTag.setTargetNode(node);
-    }
-
+    
     @Override
     public JPanel getAsPanel() {
         return this;

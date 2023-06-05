@@ -18,6 +18,7 @@
 package jp.synthtarou.cceditor.xml;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import jp.synthtarou.cceditor.common.CCWrapDataList;
 import jp.synthtarou.cceditor.xml.rules.CCXMLTagRule;
 import jp.synthtarou.cceditor.xml.rules.CCXMLRule;
@@ -79,24 +80,28 @@ public class CCXMLNode  {
         return _parent;
     }
     
-    public ArrayList<CCXMLNode> getAsPath() {
+    public ArrayList<CCXMLNode> pathTo(CCXMLNode child) {
         ArrayList<CCXMLNode> list = new ArrayList<>();
-        CCXMLNode node = this;
+        CCXMLNode node = child;
+
         while(node != null) {
             if (node.getParent() == null) {
-                //root
+                //ignore root
                 break;
             }
             list.add(0, node);
+            if (node == this) {
+                break;
+            }
             node = node.getParent();
         }
+
         return list;
     }
     
-    public String getAsPathString() {
-        ArrayList<CCXMLNode> list = getAsPath();
+    public static String pathToString(Collection<CCXMLNode> path) {
         StringBuffer str = new StringBuffer();
-        for (CCXMLNode node : list) {
+        for (CCXMLNode node : path) {
             if (str.length() != 0) {
                 str.append("/");
             }
